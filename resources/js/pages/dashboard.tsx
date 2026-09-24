@@ -154,7 +154,7 @@ function MetricCard({
                     <p className="text-xs font-medium text-text-secondary">
                         {title}
                     </p>
-                    <p className="mt-2 font-mono text-2xl font-medium tabular-nums tracking-tight text-text-primary">
+                    <p className="mt-2 font-mono text-h2 font-semibold tabular-nums tracking-tight text-text-primary">
                         {value}
                     </p>
                     <p className={`mt-1 text-xs ${toneClasses.change}`}>
@@ -197,7 +197,7 @@ function ChartPanel({
         <Card className={glassCardClassName}>
             <CardHeader className="flex flex-row items-start justify-between gap-4 px-4 pb-0 pt-4 md:px-5 md:pt-5">
                 <div className="min-w-0">
-                    <CardTitle className="text-base font-semibold tracking-tight text-text-primary">
+                    <CardTitle className="text-h3 font-medium tracking-tight text-text-primary">
                         Pergerakan aset
                     </CardTitle>
                     <p className="mt-1 text-xs text-text-secondary">
@@ -357,7 +357,7 @@ function CategoryPanel() {
     return (
         <Card className={glassCardClassName}>
             <CardHeader className="px-4 pb-1 pt-4 md:px-5 md:pt-5">
-                <CardTitle className="text-base font-semibold tracking-tight text-text-primary">
+                <CardTitle className="text-h3 font-medium tracking-tight text-text-primary">
                     Sebaran kategori
                 </CardTitle>
                 <p className="mt-1 text-xs text-text-secondary">
@@ -422,7 +422,7 @@ function AttentionPanel() {
             <CardHeader className="px-4 pb-1 pt-4 md:px-5 md:pt-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <CardTitle className="text-base font-semibold tracking-tight text-text-primary">
+                        <CardTitle className="text-h3 font-medium tracking-tight text-text-primary">
                             Perlu tindak lanjut
                         </CardTitle>
                         <p className="mt-1 text-xs text-text-secondary">
@@ -453,7 +453,7 @@ function AttentionPanel() {
                             <p className="text-xs font-medium text-text-primary">
                                 {title}
                             </p>
-                            <p className="mt-1 text-[11px] text-text-secondary">
+                            <p className="mt-1 text-small text-text-secondary">
                                 {detail}
                             </p>
                         </div>
@@ -469,7 +469,7 @@ function ActivityPanel() {
         <Card className={solidCardClassName}>
             <CardHeader className="flex flex-row items-start justify-between gap-3 px-4 pb-1 pt-4 md:px-5 md:pt-5">
                 <div>
-                    <CardTitle className="text-base font-semibold tracking-tight text-text-primary">
+                    <CardTitle className="text-h3 font-medium tracking-tight text-text-primary">
                         Aktivitas aset
                     </CardTitle>
                     <p className="mt-1 text-xs text-text-secondary">
@@ -489,7 +489,7 @@ function ActivityPanel() {
                             Aktivitas aset contoh dalam workspace ilustratif
                         </caption>
                         <thead>
-                            <tr className="border-y border-border-solid bg-surface-solid-alt text-[10px] uppercase tracking-wide text-text-secondary">
+                            <tr className="border-y border-border-solid bg-surface-solid-alt text-small uppercase tracking-wide text-text-secondary">
                                 <th
                                     scope="col"
                                     className="px-4 py-2.5 font-medium md:px-5"
@@ -527,7 +527,7 @@ function ActivityPanel() {
                                             <p className="font-medium text-text-primary">
                                                 {movement.assetName}
                                             </p>
-                                            <p className="mt-1 font-mono text-[10px] tabular-nums text-text-secondary">
+                                            <p className="mt-1 font-mono text-mono-data tabular-nums text-text-secondary">
                                                 {movement.assetCode}
                                             </p>
                                         </div>
@@ -548,7 +548,7 @@ function ActivityPanel() {
                         </tbody>
                     </table>
                 </div>
-                <p className="px-4 py-3 text-[11px] text-text-secondary md:px-5">
+                <p className="px-4 py-3 text-small text-text-secondary md:px-5">
                     Data tabel bersifat ilustratif dan bukan catatan
                     operasional.
                 </p>
@@ -577,7 +577,7 @@ function StatusLabel({ status }: { status: MovementStatus }) {
 
     return (
         <span
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium text-text-primary ${statusClasses[status]}`}
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-small font-medium text-text-primary ${statusClasses[status]}`}
         >
             <Icon
                 aria-hidden="true"
@@ -619,7 +619,7 @@ function AuditSchedule() {
                         className="size-4 text-accent-primary"
                         strokeWidth={1.8}
                     />
-                    <CardTitle className="text-base font-semibold tracking-tight text-text-primary">
+                    <CardTitle className="text-h3 font-medium tracking-tight text-text-primary">
                         Jadwal audit
                     </CardTitle>
                 </div>
@@ -653,20 +653,20 @@ function AuditSchedule() {
                                         {audit.location}
                                     </p>
                                     <time
-                                        className="shrink-0 font-mono text-[10px] tabular-nums text-text-secondary"
+                                        className="shrink-0 font-mono text-mono-data tabular-nums text-text-secondary"
                                         dateTime={audit.dateTime}
                                     >
                                         {audit.due}
                                     </time>
                                 </div>
-                                <p className="mt-1 text-[11px] text-text-secondary">
+                                <p className="mt-1 text-small text-text-secondary">
                                     {audit.assets} perlu dicocokkan
                                 </p>
                             </div>
                         </div>
                     ))}
                 </div>
-                <div className="mt-3 flex items-center gap-2 border-t border-border-glass pt-3 text-[11px] text-text-secondary">
+                <div className="mt-3 flex items-center gap-2 border-t border-border-glass pt-3 text-small text-text-secondary">
                     <PackageCheck
                         aria-hidden="true"
                         className="size-3.5 text-accent-teal"
@@ -688,14 +688,14 @@ export default function Dashboard() {
             <main className="min-w-0 space-y-4 p-4 font-sans text-text-primary sm:p-5 lg:p-6">
                 <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                     <div>
-                        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-accent-primary/20 bg-accent-primary/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-text-primary">
+                        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-accent-primary/20 bg-accent-primary/10 px-2.5 py-1 text-small font-semibold uppercase tracking-[0.08em] text-text-primary">
                             <span
                                 aria-hidden="true"
                                 className="size-1.5 rounded-full bg-accent-primary"
                             />
                             Pratinjau data
                         </div>
-                        <h1 className="text-2xl font-semibold tracking-tight text-text-primary sm:text-[1.75rem]">
+                        <h1 className="text-display font-semibold tracking-tight text-text-primary">
                             Ringkasan aset
                         </h1>
                         <p className="mt-1 max-w-2xl text-sm text-text-secondary">
