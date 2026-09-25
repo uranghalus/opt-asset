@@ -3,7 +3,11 @@
 use App\Http\Controllers\SamlController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/saml/redirect')->name('home');
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('saml.redirect');
+})->name('home');
 
 Route::prefix('saml')->group(function () {
     Route::get('redirect', [SamlController::class, 'redirect'])->name('saml.redirect');
