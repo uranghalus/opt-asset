@@ -67,22 +67,22 @@ Extend ini menambahkan: multi-tenancy (banyak perusahaan dalam satu instance), a
 
 ### MVP (fase extend ini)
 
-| # | Fitur | Catatan |
-| --- | --- | --- |
-| 1 | Multi-tenant (single database, `tenant_id` scoping) | Perusahaan berbeda dalam 1 instance |
-| 2 | SSO SAML login (menggantikan auth Laravel default) | IdP sudah tersedia, tinggal integrasi |
-| 3 | Generate barcode — single & batch (dengan pemilihan aset) |  |
-| 4 | Scan barcode → detail data aset |  |
-| 5 | Kalkulasi penyusutan otomatis (formula akuntansi standar) | Baseline dari FR-13 existing, dipastikan tenant-aware |
-| 6 | Baseline existing: CRUD asset, klasifikasi berantai + kode berjenjang, CRUD item, mutasi, disposal, histori, RBAC, audit trail, dashboard/reporting | Dipastikan seluruhnya tenant-aware |
+| #   | Fitur                                                                                                                                               | Catatan                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------- |
+| 1   | Multi-tenant (single database, `tenant_id` scoping)                                                                                                 | Perusahaan berbeda dalam 1 instance                   | gunakan plugin dari https://tenancyforlaravel.com/ |
+| 2   | SSO SAML login (menggantikan auth Laravel default)                                                                                                  | IdP sudah tersedia, tinggal integrasi                 |
+| 3   | Generate barcode — single & batch (dengan pemilihan aset)                                                                                           |                                                       |
+| 4   | Scan barcode → detail data aset                                                                                                                     |                                                       |
+| 5   | Kalkulasi penyusutan otomatis (formula akuntansi standar)                                                                                           | Baseline dari FR-13 existing, dipastikan tenant-aware |
+| 6   | Baseline existing: CRUD asset, klasifikasi berantai + kode berjenjang, CRUD item, mutasi, disposal, histori, RBAC, audit trail, dashboard/reporting | Dipastikan seluruhnya tenant-aware                    |
 
 ### v2
 
-| # | Fitur | Catatan |
-| --- | --- | --- |
-| 1 | Prediksi kapan aset harus dimusnahkan berbasis data historis (true predictive, bukan sekadar formula) | Butuh data historis kondisi/perbaikan aset — belum ada di MVP |
-| 2 | Tenant-level branding/kustomisasi ringan (logo, penamaan lokasi) |  |
-| 3 | Self-service tenant provisioning UI untuk System Admin | MVP bisa manual/seed, v2 baru self-service |
+| #   | Fitur                                                                                                 | Catatan                                                       |
+| --- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1   | Prediksi kapan aset harus dimusnahkan berbasis data historis (true predictive, bukan sekadar formula) | Butuh data historis kondisi/perbaikan aset — belum ada di MVP |
+| 2   | Tenant-level branding/kustomisasi ringan (logo, penamaan lokasi)                                      |                                                               |
+| 3   | Self-service tenant provisioning UI untuk System Admin                                                | MVP bisa manual/seed, v2 baru self-service                    |
 
 ### Nanti (belum diprioritaskan)
 
