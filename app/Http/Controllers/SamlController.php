@@ -207,7 +207,9 @@ class SamlController extends Controller
         // Strategy 3 – brute-force scan of every raw attribute value.
         foreach ($samlUser->getRaw() as $attribute) {
             foreach ($attribute->getAllAttributeValues() as $value) {
-                $string = method_exists($value, 'getValue') ? $value->getValue() : (string) $value;
+                $string = is_object($value) && method_exists($value, 'getValue')
+                    ? $value->getValue()
+                    : (string) $value;
                 if (filter_var($string, FILTER_VALIDATE_EMAIL)) {
                     return $string;
                 }

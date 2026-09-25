@@ -5,8 +5,11 @@ namespace App\Providers;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Saml2\Saml2ExtendSocialite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,9 +28,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        \Illuminate\Support\Facades\Event::listen(
-            \SocialiteProviders\Manager\SocialiteWasCalled::class,
-            [\SocialiteProviders\Saml2\Saml2ExtendSocialite::class, 'handle']
+        Event::listen(
+            SocialiteWasCalled::class,
+            [Saml2ExtendSocialite::class, 'handle']
         );
     }
 

@@ -36,14 +36,14 @@ return [
     ],
 
     'saml2' => [
-        'metadata'    => null,
-        'entityid'    => env('SAML_IDP_ENTITYID'),
+        'metadata' => null,
+        'entityid' => env('SAML_IDP_ENTITYID'),
         'certificate' => env('SAML_X509_CERT'),
-        'acs'         => env('SAML_SSO_URL'),
-        'slo'         => env('SAML_SLO_URL'),
+        'acs' => env('SAML_SSO_URL'),
+        'slo' => env('SAML_SLO_URL'),
         'sp_entityid' => env('SAML_SP_ENTITYID'),
-        'sp_acs'      => 'saml/acs',
-        'sp_sls'      => 'saml/logout',
+        'sp_acs' => 'saml/acs',
+        'sp_sls' => 'saml/logout',
         'sp_default_binding_method' => 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
     ],
 
