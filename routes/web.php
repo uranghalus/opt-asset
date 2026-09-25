@@ -17,6 +17,15 @@ Route::prefix('saml')->group(function () {
     Route::get('metadata', [SamlController::class, 'metadata'])->name('saml.metadata');
 });
 
+Route::post('logout', function () {
+    auth()->logout();
+
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect()->route('home');
+})->name('logout')->middleware('auth');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });

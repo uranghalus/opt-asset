@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'saml/acs',
         ]);
 
+        $middleware->redirectGuestsTo(fn () => route('saml.redirect'));
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [

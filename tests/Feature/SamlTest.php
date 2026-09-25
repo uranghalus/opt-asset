@@ -155,7 +155,7 @@ class SamlTest extends TestCase
 
         $this->withSession(['state' => FakeIdentityProvider::STATE])
             ->get($responseUrl)
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('home'));
     }
 
     public function test_the_email_attribute_identifies_the_local_account(): void
@@ -173,7 +173,7 @@ class SamlTest extends TestCase
     {
         $this->withSession(['state' => 'attacker-crafted-state'])
             ->get(FakeIdentityProvider::assertionResponseUrl())
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('home'));
     }
 
     public function test_the_service_provider_metadata_route_renders_valid_xml(): void
@@ -201,11 +201,11 @@ class SamlTest extends TestCase
         $this->assertFalse($this->app['auth']->guard()->check());
     }
 
-    public function test_a_login_error_lands_back_on_the_login_screen_with_a_message(): void
+    public function test_a_login_error_lands_on_the_home_route_with_a_message(): void
     {
         $response = $this->withSession(['state' => FakeIdentityProvider::STATE])
             ->get(FakeIdentityProvider::assertionResponseUrl(['success' => false]))
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('home'));
 
         $response->assertSessionHas('errors');
     }
