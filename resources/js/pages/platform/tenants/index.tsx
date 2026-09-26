@@ -1,8 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { MoreHorizontal, Pencil, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import TenantController from '@/actions/App/Http/Controllers/Platform/TenantController';
-import Heading from '@/components/heading';
 import {
     Dialog,
     DialogContent,
@@ -130,6 +129,33 @@ export default function PlatformTenantIndex() {
     const { tenants, filters } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search);
     const [pending, setPending] = useState<PendingTransition>(null);
+    const toolbarRef = useRef<HTMLFormElement>(null);
+
+    /**
+     * Apply toolbar filters through a partial reload: only `tenants` and
+     * `filters` travel over the wire (Inertia partial reloads), so shared
+     * layout data is never re-sent. Live values come from FormData — the
+     * status select is uncontrolled.
+     */
+    const applyFilters = () => {
+        const data = new FormData(toolbarRef.current ?? undefined);
+        const searchValue = String(data.get('search') ?? '').trim();
+        const statusValue = String(data.get('status') ?? '');
+
+        router.get(
+            index().url,
+            {
+                page: 1,
+                ...(searchValue !== '' ? { search: searchValue } : {}),
+                ...(statusValue !== '' ? { status: statusValue } : {}),
+            },
+            {
+                only: ['tenants', 'filters'],
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
 
     const pageHref = (page: number) =>
         index({ query: { page, search: filters.search, status: filters.status } })
@@ -139,13 +165,17 @@ export default function PlatformTenantIndex() {
         <>
             <Head title="Manajemen Tenant" />
 
-            <div className="space-y-6">
-                <div className="flex flex-wrap items-end justify-between gap-4">
-                    <Heading
-                        title="Manajemen Tenant"
-                        description="Organisasi yang memakai sistem ini. Menangguhkan tenant langsung memblokir seluruh penggunanya."
-                    />
-                    <Button asChild>
+            <div className="space-y-6 px-6 py-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="space-y-0.5">
+                        <h1 className="text-xl font-semibold tracking-tight">
+                            Manajemen Tenant
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Organisasi yang memakai sistem ini. Menangguhkan tenant langsung memblokir seluruh penggunanya.
+                        </p>
+                    </div>
+                    <Button asChild className="shrink-0">
                         <Link href={tenantsCreate()}>
                             <Plus aria-hidden="true" className="size-4" />
                             Tambah tenant
@@ -156,8 +186,11 @@ export default function PlatformTenantIndex() {
                 {/* Toolbar: filter state lives in the URL; typing submits on
                     Enter (server-side search, no client round-trip per key). */}
                 <form
-                    method="GET"
-                    action={index().url}
+                    ref={toolbarRef}
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        applyFilters();
+                    }}
                     className="flex flex-wrap items-end gap-3"
                 >
                     <div className="min-w-56 flex-1 space-y-1.5">
@@ -318,6 +351,7 @@ export default function PlatformTenantIndex() {
                                                 ? pageHref(tenants.current_page - 1)
                                                 : undefined
                                         }
+                                        only={['tenants', 'filters']}
                                         disabled={tenants.current_page <= 1}
                                     />
                                 </PaginationItem>
@@ -334,6 +368,7 @@ export default function PlatformTenantIndex() {
                                         <PaginationItem key={page}>
                                             <PaginationLink
                                                 href={pageHref(page)}
+                                                only={['tenants', 'filters']}
                                                 isActive={page === tenants.current_page}
                                                 aria-current={
                                                     page === tenants.current_page
@@ -354,6 +389,7 @@ export default function PlatformTenantIndex() {
                                                 ? pageHref(tenants.current_page + 1)
                                                 : undefined
                                         }
+                                        only={['tenants', 'filters']}
                                         disabled={
                                             tenants.current_page >= tenants.last_page
                                         }

@@ -45,6 +45,7 @@ type PaginationLinkProps = {
   href?: string
   children?: React.ReactNode
   className?: string
+  only?: string[]
   "aria-label"?: string
   "aria-current"?: "page" | true
 }
@@ -55,13 +56,14 @@ function PaginationLink({
   disabled = false,
   href,
   children,
+  only,
   ...props
 }: PaginationLinkProps) {
   const base = cn(
     "inline-flex size-9 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[color,box-shadow] focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50",
     isActive
-      ? "border border-input bg-background shadow-xs"
-      : "hover:bg-accent hover:text-accent-foreground",
+      ? "border border-border-solid bg-surface-solid-alt text-text-primary"
+      : "text-text-secondary hover:bg-surface-solid-alt hover:text-text-primary",
     className
   )
 
@@ -78,7 +80,7 @@ function PaginationLink({
   }
 
   return (
-    <Link href={href} className={base} {...props}>
+    <Link href={href} className={base} only={only} {...props}>
       {children}
     </Link>
   )

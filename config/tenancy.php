@@ -191,11 +191,12 @@ return [
     /**
      * Should tenancy routes be registered.
      *
-     * Tenancy routes include tenant asset routes. By default, this route is
-     * enabled. But it may be useful to disable them if you use external
-     * storage (e.g. S3 / Dropbox) or have a custom asset controller.
+     * Disabled (code review 2026-09-26): the only package route is the
+     * tenant-asset controller behind InitializeTenancyByDomain — a domain
+     * identification flow single-database mode never uses. Leaving it on
+     * exposes a dead unauthenticated surface.
      */
-    'routes' => true,
+    'routes' => false,
 
     /**
      * Parameters used by the tenants:migrate command.
