@@ -14,7 +14,7 @@ export function AppContent({ className, children, ...props }: Props) {
     return (
         <SidebarInset
             className={cn(
-                'min-w-0 overflow-hidden border border-border-glass my-2 bg-surface-glass shadow-light backdrop-blur-[20px] md:rounded-2xl dark:shadow-dark',
+                'h-full min-h-0 overflow-hidden border border-border-glass m-2 bg-surface-glass shadow-light backdrop-blur-[20px] md:rounded-2xl dark:shadow-dark',
                 className,
             )}
             {...props}

@@ -85,6 +85,13 @@ glass:
   shadow-light: "0 8px 32px rgba(19,27,46,0.12)"
   shadow-dark: "0 8px 32px rgba(0,0,0,0.45)"
   glow-accent-hover: "0 0 24px rgba(138,108,255,0.35)"
+aurora:
+  bloom-violet-light: "rgba(138,108,255,0.32)"
+  bloom-teal-light: "rgba(18,181,151,0.28)"
+  bloom-violet-dark: "rgba(155,135,255,0.10)"
+  bloom-teal-dark: "rgba(62,230,196,0.085)"
+  grain-opacity-light: 0.035
+  grain-opacity-dark: 0.05
 ---
 
 ## Overview
@@ -141,6 +148,7 @@ Tema visual AMS beralih dari arah ledger-industrial (flat/solid) ke **glassmorph
 
 - Glass/Blur pada layer chrome sesuai `glass.blur-panel` (20px) dan `glass.blur-nested` (10px, untuk elemen di dalam elemen glass lain — hindari blur bertumpuk berat).
 - Glow aksen (`glass.glow-accent-hover`) hanya pada hover tombol primary — bukan default state, supaya tidak berkedip ramai saat scroll list panjang.
+- **Aurora field** (`aurora.*`) — identity layer paling belakang: tiga bloom radial (violet/teal) di atas base gradient, inti tiap bloom digeser keluar viewport supaya yang terlihat hanya falloff-nya, plus grain SVG statis (`aurora.grain-opacity-*`) penekan banding pada ramp yang sangat landai. Chrome kaca duduk di atasnya; surface solid duduk di atas chrome. Amplitudo dikunci dari pengukuran kontras (model komposit sRGB, grid 12px @1440×900, alpha kaca nyata): kasus terburuk `text-secondary` **4.751:1 (light)** dan **4.933:1 (dark)** — keduanya AA. Kekuatan dark sengaja tidak disamakan dengan light: teks terang di atas `#060918` kehilangan kontras jauh lebih cepat saat dasarnya dicerahkan (0.18/0.15 sudah gagal di 4.46:1), jadi asimetri ini struktural — jangan "diseimbangkan" tanpa mengukur ulang.
 - **Tidak dipakai:** neumorphism, 3D/parallax, keyframe animation dekoratif berjalan terus-menerus. Ini alat kerja, animasi hanya untuk transisi state (buka modal, ganti tema, hasil scan) — sesuai prinsip "motion menjawab aksi user", bukan hiasan latar.
 
 ## Dark/Light Mode

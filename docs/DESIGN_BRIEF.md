@@ -29,7 +29,7 @@ Semua keputusan visual di bawah ditarik dari dua dunia ini, bukan dari template 
 
 > **Revisi:** Arah awal brief ini adalah flat/ledger-industrial. Berdasarkan preferensi eksplisit, tema diganti ke **glassmorphism dual-mode** (light & dark, wajib dua-duanya), diadaptasi dari referensi AURORA. Token lengkap & mesin-baca ada di `DESIGN.md` — bagian ini menjelaskan alasan & batasannya.
 
-**Mood:** Aurora-ledger. Glassmorphism tetap harus terasa seperti alat kerja, bukan halaman promosi — jadi glass dipakai sebagai identitas visual pada *chrome* (nav, modal, card ringkasan), sementara data (tabel, form, daftar) tetap solid/opaque. Ini bukan kompromi setengah hati; ini aturan wajib supaya P1 (densitas data menang) tidak dikorbankan demi tren visual.
+**Mood:** Aurora-ledger. Glassmorphism tetap harus terasa seperti alat kerja, bukan halaman promosi — jadi glass dipakai sebagai identitas visual pada _chrome_ (nav, modal, card ringkasan), sementara data (tabel, form, daftar) tetap solid/opaque. Ini bukan kompromi setengah hati; ini aturan wajib supaya P1 (densitas data menang) tidak dikorbankan demi tren visual.
 
 **Referensi konkret:**
 
@@ -58,16 +58,16 @@ Semua keputusan visual di bawah ditarik dari dua dunia ini, bukan dari template 
 
 ### Warna — Light & Dark (wajib dua-duanya)
 
-| Token | Light | Dark | Peran | Alasan |
-| --- | --- | --- | --- | --- |
-| `bg-base` | `#E8ECF8 → #F3F0FF` (gradient) | `#060918 → #0D1230` (gradient) | Background utama | Gradient aurora — identitas glass theme, bukan solid flat lagi |
-| `surface-glass` | `rgba(255,255,255,0.55)` | `rgba(255,255,255,0.06)` | Chrome: nav, modal, card ringkasan | Translucent + blur; TIDAK dipakai di tabel/form (lihat aturan pemisahan lapisan §2) |
-| `surface-solid` | `#FFFFFF` | `#12172B` | Tabel data, form input | Tetap opaque penuh — menjaga P1 (densitas & keterbacaan angka) di tengah tema glass |
-| `text-primary` / `text-secondary` | `#131B2E` / `#5B6478` | `#E8ECF8` / `#8B93B5` | Teks utama/meta |  |
-| `accent-primary` (violet) | `#8A6CFF` | `#9B87FF` | CTA utama, link, brand | Diambil dari AURORA; violet dipilih sebagai warna brand baru (bukan hijau ledger lama) karena tema kini eksplisit "aurora glass", bukan ledger-flat |
-| `accent-teal` | `#12B597` | `#3EE6C4` | Aksi scan/verifikasi berhasil | Dipertahankan dari fungsi lama "tag-amber untuk aksi fisik", tapi digeser ke teal (AURORA) — tetap satu warna khusus untuk aksi scan/verify supaya tidak tertukar dengan CTA umum |
-| `success` / `warning` / `danger` | `#1F9D6F` / `#B5721F` / `#C23A3A` | `#34D399` / `#F2B84B` / `#FF6B6B` | Status aset (aktif/menunggu/disposal) | Peran sama seperti versi lama (ledger-600/tag-amber-600/rust-600), warnanya disesuaikan agar tetap kontras di atas glass terang maupun gelap |
-| `border-glass` / `border-solid` | `rgba(255,255,255,0.6)` / `#DDE1EC` | `rgba(255,255,255,0.12)` / `#2A3152` | Garis panel glass / garis tabel-form | Dua jenis border terpisah — glass border harus translucent, solid border tetap opaque tegas seperti brief awal |
+| Token                             | Light                               | Dark                                 | Peran                                 | Alasan                                                                                                                                                                            |
+| --------------------------------- | ----------------------------------- | ------------------------------------ | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bg-base`                         | `#E8ECF8 → #F3F0FF` (gradient)      | `#060918 → #0D1230` (gradient)       | Background utama                      | Gradient aurora — identitas glass theme, bukan solid flat lagi                                                                                                                    |
+| `surface-glass`                   | `rgba(255,255,255,0.55)`            | `rgba(255,255,255,0.06)`             | Chrome: nav, modal, card ringkasan    | Translucent + blur; TIDAK dipakai di tabel/form (lihat aturan pemisahan lapisan §2)                                                                                               |
+| `surface-solid`                   | `#FFFFFF`                           | `#12172B`                            | Tabel data, form input                | Tetap opaque penuh — menjaga P1 (densitas & keterbacaan angka) di tengah tema glass                                                                                               |
+| `text-primary` / `text-secondary` | `#131B2E` / `#5B6478`               | `#E8ECF8` / `#8B93B5`                | Teks utama/meta                       |                                                                                                                                                                                   |
+| `accent-primary` (violet)         | `#8A6CFF`                           | `#9B87FF`                            | CTA utama, link, brand                | Diambil dari AURORA; violet dipilih sebagai warna brand baru (bukan hijau ledger lama) karena tema kini eksplisit "aurora glass", bukan ledger-flat                               |
+| `accent-teal`                     | `#12B597`                           | `#3EE6C4`                            | Aksi scan/verifikasi berhasil         | Dipertahankan dari fungsi lama "tag-amber untuk aksi fisik", tapi digeser ke teal (AURORA) — tetap satu warna khusus untuk aksi scan/verify supaya tidak tertukar dengan CTA umum |
+| `success` / `warning` / `danger`  | `#1F9D6F` / `#B5721F` / `#C23A3A`   | `#34D399` / `#F2B84B` / `#FF6B6B`    | Status aset (aktif/menunggu/disposal) | Peran sama seperti versi lama (ledger-600/tag-amber-600/rust-600), warnanya disesuaikan agar tetap kontras di atas glass terang maupun gelap                                      |
+| `border-glass` / `border-solid`   | `rgba(255,255,255,0.6)` / `#DDE1EC` | `rgba(255,255,255,0.12)` / `#2A3152` | Garis panel glass / garis tabel-form  | Dua jenis border terpisah — glass border harus translucent, solid border tetap opaque tegas seperti brief awal                                                                    |
 
 Status badge (derivasi dari palet di atas): Aktif = `success` tint; Dalam Mutasi = `accent-teal` tint; Disposal/Nonaktif = `danger` tint; Menunggu Sinkron SSO = `warning` tint. Badge selalu di atas `surface-solid` (bukan glass) supaya warnanya stabil dan kontrasnya terjamin — lihat §10 Accessibility.
 
@@ -79,15 +79,15 @@ Status badge (derivasi dari palet di atas): Aktif = `success` tint; Dalam Mutasi
 
 **Skala tipografi** (basis 14px, rasio \~1.25, dioptimalkan untuk UI padat bukan halaman marketing):
 
-| Level | Ukuran | Weight | Line-height | Pemakaian |
-| --- | --- | --- | --- | --- |
-| Display | 28px | Semibold | 1.2 | Judul halaman utama (mis. "Daftar Aset") |
-| H2 | 22px | Semibold | 1.25 | Judul section dalam halaman |
-| H3 | 18px | Medium | 1.3 | Sub-section, judul kartu |
-| Body | 14px | Regular | 1.5 | Teks default, isi tabel |
-| Body-strong | 14px | Medium | 1.5 | Label penting, nilai kunci |
-| Small | 12.5px | Regular | 1.4 | Meta, timestamp, caption |
-| Mono-data | 13px | Regular (Plex Mono) | 1.4 | Kode aset, barcode value, nominal |
+| Level       | Ukuran | Weight              | Line-height | Pemakaian                                |
+| ----------- | ------ | ------------------- | ----------- | ---------------------------------------- |
+| Display     | 28px   | Semibold            | 1.2         | Judul halaman utama (mis. "Daftar Aset") |
+| H2          | 22px   | Semibold            | 1.25        | Judul section dalam halaman              |
+| H3          | 18px   | Medium              | 1.3         | Sub-section, judul kartu                 |
+| Body        | 14px   | Regular             | 1.5         | Teks default, isi tabel                  |
+| Body-strong | 14px   | Medium              | 1.5         | Label penting, nilai kunci               |
+| Small       | 12.5px | Regular             | 1.4         | Meta, timestamp, caption                 |
+| Mono-data   | 13px   | Regular (Plex Mono) | 1.4         | Kode aset, barcode value, nominal        |
 
 ### Skala Spacing
 
@@ -115,23 +115,23 @@ Tetap dibedakan sengaja per hierarki — glassmorphism justru butuh ini, karena 
 
 ## 4. Screen Inventory
 
-| Screen | Tujuan |
-| --- | --- |
-| Login (SSO Redirect) | Titik masuk tunggal — redirect ke IdP tenant, tidak ada form password lokal |
-| Dashboard | Ringkasan kondisi aset tenant aktif: jumlah aset per status, nilai buku total, aset butuh perhatian |
-| Daftar Aset | Tabel utama seluruh aset tenant — pencarian, filter klasifikasi, aksi massal |
-| Detail Aset | Semua data 1 aset: klasifikasi, nilai/penyusutan, lokasi, riwayat, barcode |
-| Form Tambah/Edit Aset | Input data aset baru/ubah, termasuk pilih klasifikasi berjenjang |
-| Manajemen Klasifikasi | Kelola rantai golongan→kategori→kelompok→sub kelompok + kode masing-masing |
-| Generate Barcode (Batch) | Pilih banyak aset, generate & preview label cetak sekaligus |
-| Scan Barcode | Input scan cepat → langsung ke detail aset |
-| Mutasi Aset | Pindahkan aset antar lokasi, dengan histori |
-| Disposal Aset | Proses pemusnahan/pelepasan aset, dengan approval |
-| Riwayat & Audit Trail | Log semua perubahan aset, per tenant |
-| Laporan Penyusutan | Ringkasan nilai buku, akumulasi penyusutan per periode |
-| Admin — Konfigurasi SSO | Setup IdP SAML per tenant (entity ID, ACS URL, cert, attribute mapping) |
-| Admin — Provisioning Tenant | Buat tenant baru, set klasifikasi awal |
-| Admin — User & Role (RBAC) | Kelola role & permission per tenant |
+| Screen                      | Tujuan                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| Login (SSO Redirect)        | Titik masuk tunggal — redirect ke IdP tenant, tidak ada form password lokal                         |
+| Dashboard                   | Ringkasan kondisi aset tenant aktif: jumlah aset per status, nilai buku total, aset butuh perhatian |
+| Daftar Aset                 | Tabel utama seluruh aset tenant — pencarian, filter klasifikasi, aksi massal                        |
+| Detail Aset                 | Semua data 1 aset: klasifikasi, nilai/penyusutan, lokasi, riwayat, barcode                          |
+| Form Tambah/Edit Aset       | Input data aset baru/ubah, termasuk pilih klasifikasi berjenjang                                    |
+| Manajemen Klasifikasi       | Kelola rantai golongan→kategori→kelompok→sub kelompok + kode masing-masing                          |
+| Generate Barcode (Batch)    | Pilih banyak aset, generate & preview label cetak sekaligus                                         |
+| Scan Barcode                | Input scan cepat → langsung ke detail aset                                                          |
+| Mutasi Aset                 | Pindahkan aset antar lokasi, dengan histori                                                         |
+| Disposal Aset               | Proses pemusnahan/pelepasan aset, dengan approval                                                   |
+| Riwayat & Audit Trail       | Log semua perubahan aset, per tenant                                                                |
+| Laporan Penyusutan          | Ringkasan nilai buku, akumulasi penyusutan per periode                                              |
+| Admin — Konfigurasi SSO     | Setup IdP SAML per tenant (entity ID, ACS URL, cert, attribute mapping)                             |
+| Admin — Provisioning Tenant | Buat tenant baru, set klasifikasi awal                                                              |
+| Admin — User & Role (RBAC)  | Kelola role & permission per tenant                                                                 |
 
 ---
 
@@ -213,22 +213,46 @@ Tetap dibedakan sengaja per hierarki — glassmorphism justru butuh ini, karena 
 
 ## 7. Component Library
 
-| Komponen | Variant | State |
-| --- | --- | --- |
-| **Button** | Primary (ledger-600), Secondary (outline), Destructive (rust-600), Tag-Action (tag-amber-600, khusus aksi barcode/fisik) | default, hover, active, disabled, loading (spinner inline) |
-| **Data Table** | Compact (tabel utama), Nested (untuk klasifikasi berjenjang) | default, sorted-column, row-selected, loading (skeleton row), empty |
-| **Status Badge** | Aktif, Mutasi, Disposal, Menunggu Sinkron | default only (warna tetap, tidak interaktif) |
-| **Barcode Label Card** | Single, Batch-grid item | preview, print-ready, generated |
-| **Scan Input** | Standalone (halaman scan), Inline (dalam form pencarian) | idle, listening (border ledger-600 aktif), success-flash, error-flash |
-| **Classification Selector** | 4-level cascading dropdown | default, level-locked (belum pilih parent), loaded, empty (parent belum punya child) |
-| **Form Field** | Text, Number (mono untuk nominal), Select, Cascading Select, File Upload (cert SSO) | default, focus, error (rust-600 border + pesan), disabled, readonly (untuk kode aset auto-generate) |
-| **Metric Card** | Angka besar, Angka + trend kecil | default, loading (skeleton) |
-| **Timeline/Audit Log Item** | Event standar, Event kritis (disposal/error) | default, expanded |
-| **Attribute Mapping Row** (khusus SSO config) | — | default, unmapped (warning), mapped |
-| **Toast/Alert** | Success, Error, Info, Warning | enter, visible, dismiss |
-| **Modal/Dialog** | Confirm (mis. disposal), Form-in-modal | default, loading-action |
-| **Tenant Identity Bar** | — (selalu tampil sesuai Principle P2) | default only |
-| **Empty State** | Per-screen custom illustration teks (bukan generic icon+text template) | default |
+| Komponen                                      | Variant                                                                                                                  | State                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| **Button**                                    | Primary (ledger-600), Secondary (outline), Destructive (rust-600), Tag-Action (tag-amber-600, khusus aksi barcode/fisik) | default, hover, active, disabled, loading (spinner inline)                                          |
+| **Data Table**                                | Compact (tabel utama), Nested (untuk klasifikasi berjenjang)                                                             | default, sorted-column, row-selected, loading (skeleton row), empty                                 |
+| **Status Badge**                              | Aktif, Mutasi, Disposal, Menunggu Sinkron                                                                                | default only (warna tetap, tidak interaktif)                                                        |
+| **Barcode Label Card**                        | Single, Batch-grid item                                                                                                  | preview, print-ready, generated                                                                     |
+| **Scan Input**                                | Standalone (halaman scan), Inline (dalam form pencarian)                                                                 | idle, listening (border ledger-600 aktif), success-flash, error-flash                               |
+| **Classification Selector**                   | 4-level cascading dropdown                                                                                               | default, level-locked (belum pilih parent), loaded, empty (parent belum punya child)                |
+| **Form Field**                                | Text, Number (mono untuk nominal), Select, Cascading Select, File Upload (cert SSO)                                      | default, focus, error (rust-600 border + pesan), disabled, readonly (untuk kode aset auto-generate) |
+| **Metric Card**                               | Angka besar, Angka + trend kecil                                                                                         | default, loading (skeleton)                                                                         |
+| **Timeline/Audit Log Item**                   | Event standar, Event kritis (disposal/error)                                                                             | default, expanded                                                                                   |
+| **Attribute Mapping Row** (khusus SSO config) | —                                                                                                                        | default, unmapped (warning), mapped                                                                 |
+| **Toast/Alert**                               | Success, Error, Info, Warning                                                                                            | enter, visible, dismiss                                                                             |
+| **Modal/Dialog**                              | Confirm (mis. disposal), Form-in-modal                                                                                   | default, loading-action                                                                             |
+| **Tenant Identity Bar**                       | — (selalu tampil sesuai Principle P2)                                                                                    | default only                                                                                        |
+| **Empty State**                               | Per-screen custom illustration teks (bukan generic icon+text template)                                                   | default                                                                                             |
+
+**Catatan Implementasi (wajib dipatuhi tim dev/FE):**
+
+- Component library di atas diimplementasikan di atas **shadcn/ui** sebagai base primitive (bukan dibangun dari nol), lalu di-restyle sesuai token di §3 (warna glass/solid, radius per hierarki, tipografi IBM Plex Sans/Mono) — shadcn dipilih karena source code komponennya di-copy langsung ke repo (bukan dependency tertutup dari `node_modules`), sehingga aturan pemisahan layer glass vs solid (§2) dan token custom (§3) bisa diterapkan penuh tanpa dibatasi API komponen pihak ketiga.
+- Setiap kali menambahkan component baru dari shadcn, gunakan command resmi berikut (bukan copy-paste manual dari browser):
+
+    ```
+    npx shadcn@latest add [nama-component]
+    ```
+
+- **Wajib** membaca dokumentasi instalasi resmi di [https://ui.shadcn.com/docs/installation](https://ui.shadcn.com/docs/installation) setiap kali akan menambahkan component baru — bukan hanya sekali di awal setup proyek. Alasannya: konfigurasi (registry, path alias, versi Tailwind/React yang didukung) bisa berbeda mengikuti setup Inertia + React di proyek ini, dan shadcn sendiri kerap mengubah cara instalasinya dari waktu ke waktu.
+- Setelah component di-generate, jangan langsung dipakai dengan styling default shadcn apa adanya — sesuaikan dulu dengan token di §3 dan aturan glass/solid di §2 sebelum dipakai di halaman manapun.
+- **Sumber kebenaran styling wajib mengacu ke `DESIGN.md`** (token mesin-baca — warna, radius, spacing, tipografi, shadow/blur), bukan ke nilai hex/px yang diketik ulang manual dari tabel human-readable di §3 dokumen ini. Tabel di §3 adalah versi penjelasan untuk manusia dan bisa sedikit lag; kalau ada perbedaan antara §3 dan `DESIGN.md`, **`DESIGN.md` yang menang**. Setiap component hasil `shadcn add` harus di-mapping variabel CSS/Tailwind config-nya langsung ke token di `DESIGN.md` (bukan hardcode warna/ukuran baru), supaya semua komponen — lama maupun baru — tetap satu sumber kebenaran dan desain tidak pecah/inkonsisten antar halaman.
+
+**Aturan Form (wajib, khusus komponen Form Field, Classification Selector, Attribute Mapping Table, dan form lain di §7):**
+
+Semua form di aplikasi ini — Form Tambah/Edit Aset, Classification Selector berjenjang, Attribute Mapping (SSO), Provisioning Tenant, dsb — wajib dibangun mengikuti pola resmi shadcn di [https://ui.shadcn.com/docs/forms/react-hook-form](https://ui.shadcn.com/docs/forms/react-hook-form):
+
+- **React Hook Form** (`useForm`) untuk state form, dikombinasikan dengan **Zod** (`zodResolver`) untuk schema validation — bukan validasi manual `useState` + `if/else` per field.
+- Struktur markup pakai komponen `<Field />`, `<FieldLabel />`, `<FieldDescription />`, `<FieldError />`, `<FieldGroup />`, `<FieldSet />`, `<FieldLegend />` dari shadcn (`npx shadcn@latest add field`) — jangan bikin wrapper form custom dari nol, supaya spacing & aksesibilitas form otomatis konsisten di semua halaman.
+- Binding tiap field pakai `<Controller />` dari React Hook Form (bukan `register` biasa) khususnya untuk field non-native seperti Select, Checkbox, Radio Group, Switch, dan Classification Selector cascading — mengikuti contoh per tipe field di dokumentasi tsb.
+- Error wajib ditampilkan dengan pola: `data-invalid={fieldState.invalid}` di `<Field />` + `aria-invalid={fieldState.invalid}` di form control-nya (`<Input />`, `<SelectTrigger />`, dst.) + `<FieldError errors={[fieldState.error]} />` — ini juga yang membuat requirement aksesibilitas form di §10 (fokus, ARIA, pesan error jelas) otomatis terpenuhi tanpa kerja ekstra.
+- Untuk form array/dinamis (mis. Attribute Mapping Table yang barisnya bisa ditambah/dikurangi), pakai `useFieldArray` sesuai pola "Array Fields" di dokumentasi tsb — bukan array state manual.
+- Styling `<Field />` dkk. tetap ikut aturan glass/solid §2 dan token `DESIGN.md`/§3 di atas — dokumentasi shadcn hanya jadi acuan struktur & behavior form, bukan acuan warna/radius.
 
 ---
 
@@ -282,8 +306,8 @@ Asumsi pemakaian: staf lapangan dominan **mobile/tablet** (scan, lihat detail, m
 - **Focus order:** Mengikuti urutan DOM logis — Tenant Identity Bar tidak masuk tab order utama kecuali interaktif (dropdown switch tenant untuk admin lintas tenant). Form cascading classification: focus order golongan→kategori→kelompok→sub kelompok mengikuti urutan visual & logis, field yang masih ter-lock (parent belum dipilih) tetap ada di tab order tapi berstatus `aria-disabled` dengan penjelasan.
 - **Keyboard nav:** Data Table mendukung navigasi panah (arrow key antar sel/baris) untuk efisiensi input staf yang sering kerja tanpa mouse (device scanner). Bulk select mendukung `Shift+Click`/`Shift+Arrow` dan checkbox individual full keyboard-accessible. Modal wajib trap focus dan kembali ke elemen pemicu saat ditutup (`Esc`).
 - **ARIA khusus:**
-  - Scan Input: `aria-live="polite"` pada area hasil scan, supaya screen reader mengumumkan hasil scan tanpa perlu pindah fokus manual.
-  - Status Badge: `role="status"` dengan label teks penuh (bukan hanya warna) — status tidak boleh disampaikan lewat warna saja (mis. badge "Disposal" tetap ada teks "Disposal", bukan cuma titik merah).
-  - Attribute Mapping Table (SSO): setiap baris punya `aria-describedby` yang menjelaskan field SAML mana yang di-mapping ke field aplikasi mana.
-  - Toast/Alert: `role="alert"` untuk error, `role="status"` untuk info/success (urgensi berbeda untuk screen reader).
-  - Offline banner: `aria-live="assertive"` karena mengubah keandalan data yang sedang dilihat user.
+    - Scan Input: `aria-live="polite"` pada area hasil scan, supaya screen reader mengumumkan hasil scan tanpa perlu pindah fokus manual.
+    - Status Badge: `role="status"` dengan label teks penuh (bukan hanya warna) — status tidak boleh disampaikan lewat warna saja (mis. badge "Disposal" tetap ada teks "Disposal", bukan cuma titik merah).
+    - Attribute Mapping Table (SSO): setiap baris punya `aria-describedby` yang menjelaskan field SAML mana yang di-mapping ke field aplikasi mana.
+    - Toast/Alert: `role="alert"` untuk error, `role="status"` untuk info/success (urgensi berbeda untuk screen reader).
+    - Offline banner: `aria-live="assertive"` karena mengubah keandalan data yang sedang dilihat user.

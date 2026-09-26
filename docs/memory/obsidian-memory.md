@@ -1,6 +1,6 @@
 # Opti-Asset — Agent Memory
 
-_Terakhir diperbarui: 2026-09-26 (T01 + T01b selesai — tenancy foundation & platform tenant CRUD)._
+_Terakhir diperbarui: 2026-09-26 (T01 + T01b + T01d selesai; shell layout di-overhaul sesuai DESIGN.md)._
 
 ## Keputusan arsitektur & konvensi (binding)
 
@@ -10,6 +10,8 @@ _Terakhir diperbarui: 2026-09-26 (T01 + T01b selesai — tenancy foundation & pl
 - **Depreciation:** bulanan (scheduled, idempotent per tenant+period), **straight-line only** MVP tapi service di belakang enum metode; floor di residu; on-demand recalc saat asset create/update.
 - **Auth:** SSO SAML only (epic #1 selesai, Fortify dihapus total); JIT user dapat role default least-privilege (T02).
 - **SSR wajib** + Inertia v3 partial reloads (`router.reload({ only: [...] })`) untuk pagination/filter/search; ledger solid-surface, chrome glass (rules §2); PHPUnit only.
+- **Shell layout (terlaksana 2026-09-26, `app-sidebar-layout.tsx`):** tiga lapisan — aurora identity layer (`AuroraField`, `fixed inset-0 z-[-1]`) → chrome kaca (sidebar + panel `AppContent`) → surface solid milik halaman. **`#app-content` WAJIB tetap transparan** (jangan pernah pasang `bg-surface-solid` di sana) — fill opak di titik itu mematikan aurora dan membuat kartu kaca hanya mem-blur putih rata; itu bug asal yang memicu revamp. Target skip link `#app-content` wajib punya `tabIndex={-1}` (kalau tidak, focus tidak berpindah — WCAG 2.4.1 gagal).
+- **Aurora = token, bukan selera:** amplitudo bloom + opasitas grain tinggal di `DESIGN.md` frontmatter `aurora.*`, dikunci dari pengukuran kontras (worst-case `text-secondary` 4.751:1 light / 4.933:1 dark, keduanya AA). Asimetri light↔dark bersifat struktural — jangan "diseimbangkan" tanpa mengukur ulang pakai model komposit **sRGB** (bukan linier) dengan alpha kaca nyata. Perubahan nilai visual apa pun: update `DESIGN.md` dulu, baru turunkan ke kode (rules §6).
 
 ## Status proyek (2026-09-26)
 
@@ -29,4 +31,6 @@ _Terakhir diperbarui: 2026-09-26 (T01 + T01b selesai — tenancy foundation & pl
 - Isolasi tenant = defect class tertinggi; setiap tiket yang menyentuh query domain wajib isolation test (rules §1.1).
 - dompdf batch harus chunked di queue; progress via partial reload.
 - PR #8 masih open — strategi merge/rebase T02/T09 konfirmasi dulu.
+- **Cara verifikasi UI tanpa IdP lokal (reusable, bukan bypass auth):** render komponen React asli dari bundle SSR ter-build dengan props fabrikasi → HTML statis, lalu headless Chrome dari CLI (`--headless=new --screenshot=`) atas URL `file://` (path wajib absolut, spasi → `%20`). Jangan tambah route dev-only / backdoor login (rules §1.2). Jebakan: `--dump-dom` Chrome dipaksa minimum lebar **500px** — untuk viewport sempit (mis. 390px) bungkus halaman dalam `<iframe>` selebar target + `--allow-file-access-from-files`, karena media query resolve terhadap lebar iframe. In-app browser tidak punya permukaan render (viewport 0×0) — jangan dipakai.
+- **Utang teknis yang belum dibayar (temuan 2026-09-26, di luar scope revamp shell):** (a) `DESIGN.md` menetapkan IBM Plex Sans/Mono dan `app.css` mendeklarasikannya, tapi `vite.config.ts` memuat woff **Instrument Sans** → keluarga yang dideklarasikan tidak punya berkas font & jatuh ke sans sistem; (b) `StatChangeBadge` (`dashboard.tsx`) tanpa `whitespace-nowrap` → membungkus 4.3 baris di 768px / 2.3 baris di 1024px; (c) kartu promo sidebar terpotong di tengah teks pada viewport 900px; (d) `ui/select.tsx` & `ui/toggle.tsx` masih `bg-transparent`; (e) kontras placeholder search header mode gelap ≈2.96:1.
 - Bila Obsidian MCP ter-connected nanti, konten `docs/memory/obsidian-memory.md` ini justru yang dipakai/di-extend ke vault (jangan duplikasi struktur).
