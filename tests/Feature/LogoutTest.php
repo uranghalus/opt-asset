@@ -12,7 +12,7 @@ class LogoutTest extends TestCase
 
     public function test_authenticated_users_can_log_out_and_the_session_is_destroyed(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->forTenant()->create();
 
         $response = $this->actingAs($user)->post(route('logout'));
 

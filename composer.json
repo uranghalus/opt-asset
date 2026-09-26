@@ -16,7 +16,8 @@
         "laravel/socialite": "^5.31",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
-        "socialiteproviders/saml2": "^4.10"
+        "socialiteproviders/saml2": "^4.10",
+        "stancl/tenancy": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -38,6 +39,9 @@
         }
     },
     "autoload-dev": {
+        "files": [
+            "tests/Support/helpers.php"
+        ],
         "psr-4": {
             "Tests\\": "tests/"
         }

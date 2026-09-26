@@ -26,7 +26,7 @@ Route::post('logout', function () {
     return redirect()->route('home');
 })->name('logout')->middleware('auth');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 

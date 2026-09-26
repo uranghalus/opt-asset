@@ -87,7 +87,7 @@ class SamlTest extends TestCase
 
     public function test_a_signed_response_logs_an_existing_user_back_in_without_duplicating_the_account(): void
     {
-        $user = User::factory()->create(['email' => FakeIdentityProvider::EMAIL]);
+        $user = User::factory()->forTenant()->create(['email' => FakeIdentityProvider::EMAIL]);
 
         $this->withSession(['state' => FakeIdentityProvider::STATE])
             ->get(FakeIdentityProvider::assertionResponseUrl());
@@ -194,7 +194,7 @@ class SamlTest extends TestCase
 
     public function test_an_idp_logout_request_terminates_the_local_session(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->forTenant()->create();
 
         $this->actingAs($user)->get(FakeIdentityProvider::logoutRequestUrl());
 

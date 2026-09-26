@@ -11,3 +11,10 @@ parameters:
         - routes/
 
     level: 7
+
+    ignoreErrors:
+        -
+            # Acceptable while the trait awaits its first real consumer (T03
+            # introduces the first domain model using it); the tenancy harness
+            # in tests/Feature/Tenancy exercises the trait's behavior fully.
+            message: '#Trait App\\Concerns\\BelongsToTenant is used zero times and is not analysed\.#'

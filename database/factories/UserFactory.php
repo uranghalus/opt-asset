@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -55,6 +56,24 @@ class UserFactory extends Factory
             'two_factor_secret' => encrypt('secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['recovery-code-1'])),
             'two_factor_confirmed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Attach the user to the given tenant (creates one when omitted).
+     */
+    public function forTenant(?Tenant $tenant = null): static
+    {
+        return $this->for($tenant ?? Tenant::factory());
+    }
+
+    /**
+     * Give the user a SAML NameID as if provisioned through SSO.
+     */
+    public function saml(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'saml_name_id' => (string) str()->ulid(),
         ]);
     }
 }

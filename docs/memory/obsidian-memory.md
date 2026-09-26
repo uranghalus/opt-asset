@@ -1,21 +1,22 @@
 # Opti-Asset — Agent Memory
 
-_Terakhir diperbarui: 2026-09-25 (sesi perencanaan AMS v2 — research, grill, to-tickets)._
+_Terakhir diperbarui: 2026-09-26 (T01 Tenancy Foundation selesai — implementasi AMS v2 dimulai)._
 
 ## Keputusan arsitektur & konvensi (binding)
 
 - **Tenancy:** stancl/tenancy single-database mode + **fail-closed wrapper** — stock `BelongsToTenant` milik stancl terdokumentasi fail-open (unscoped saat tidak ada tenant context); wrapper + isolation tests wajib menutup celah itu. Tenant di-resolve dari user SSO via middleware. Composite unique `(tenant_id, kode_asset)` dll. di level DB untuk semua tabel domain.
+- **Tenancy (terlaksana T01, 2026-09-26):** `stancl/tenancy` v3.10.1. `App\Tenancy\FailClosedTenantScope` (no context → `1=0`, tidak pernah unscoped) + `App\Concerns\BelongsToTenant` (scope fail-closed; create tanpa context → `TenantContextRequiredException`; `tenant_id` dari request selalu ditimpa). `App\Tenancy\TenantContext` satu pintu (initialize/end/check/id, `initializeFromUser()` menolak tenant non-`active`, mirror `Context::add('tenant.id')` untuk queue). Middleware alias `tenant` — JANGAN global web (SAML endpoints & logout harus di luar context); user tanpa tenant → 403. `tenants.id` = **ULID** (`App\Tenancy\UlidIdentifierGenerator`), tabel `tenants` wajib kolom `data` JSON (VirtualColumn) + override `getCustomColumns()` di model untuk kolom nyata (id/code/name/status). Config: Database/Cache/Filesystem bootstrapper OFF, Queue ON. Middleware chain penting: `auth` → `tenant` → `verified` → HandleInertia.
 - **Barcode:** Code128 + kode_asset human-readable di bawah bars (picqer/php-barcode-generator → SVG → dompdf); batch via queue; `barcode_value` unik per tenant.
 - **Depreciation:** bulanan (scheduled, idempotent per tenant+period), **straight-line only** MVP tapi service di belakang enum metode; floor di residu; on-demand recalc saat asset create/update.
 - **Auth:** SSO SAML only (epic #1 selesai, Fortify dihapus total); JIT user dapat role default least-privilege (T02).
 - **SSR wajib** + Inertia v3 partial reloads (`router.reload({ only: [...] })`) untuk pagination/filter/search; ledger solid-surface, chrome glass (rules §2); PHPUnit only.
 
-## Status proyek (2026-09-25)
+## Status proyek (2026-09-26)
 
 - SAML SSO live di `feature/saml-sso` (epic #1, tiket #2–#7, PR #8 open, jangan merge tanpa approval).
-- Dashboard shell acrux-style ada (masih mock data); domain layer kosong (hanya model `User`).
-- **Plan & tiket:** `docs/PROJECT-PLAN.md` aktif; 14 tiket T01–T14 terpublikasi ke GitHub **#9–#22** (`ready-for-agent`), blocking edges di body `Blocked by` (native dependency API tidak reachable dari environment — `gh` absent, MCP GitHub tak punya tool dependency; fallback sesuai `docs/agents/issue-tracker.md`).
-- **Frontier:** T01 (#9) Tenancy Foundation — belum mulai; user memilih tidak implement di sesi ini.
+- Dashboard shell acrux-style ada (masih mock data).
+- **T01 (#9) SELESAI** di `feature/saml-sso`: Tenant model + fail-closed scoping + harness isolasi (12 test) — 45 test hijau, pint/phpstan bersih; komitmen per tiket dimulai dari tiket ini. UI skills (impeccable/ui-ux-pro-max, shadcn) mulai dipakai dari T03 (halaman klasifikasi pertama).
+- **Frontier berikutnya:** T02 (#10) RBAC Skeleton — blocked oleh T01 saja → terbuka; T03 (#11) Classification Chain juga terbuka (blockers T01+T02, tunggu T02 bila strict). `gh` CLI berfungsi kembali di environment ini (GitHub MCP **Bad credentials** — jangan pakai untuk repo ini).
 - Draft lokal tiket tetap di `.scratch/ams-v2/issues/` (sinkron konsep dengan #9–#22).
 
 ## Risiko & catatan sesi berikutnya

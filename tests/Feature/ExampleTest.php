@@ -19,7 +19,7 @@ class ExampleTest extends TestCase
 
     public function test_authenticated_users_are_redirected_to_the_dashboard()
     {
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->forTenant()->create());
 
         $response = $this->get(route('home'));
 
