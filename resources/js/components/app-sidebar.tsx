@@ -34,6 +34,7 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as platformTenantsIndex } from '@/routes/platform/tenants';
 
 const navGroups = [
     {
@@ -59,7 +60,11 @@ const navGroups = [
             { title: 'Klasifikasi', href: '#', icon: Tags },
             { title: 'Setup SSO', href: '#', icon: ShieldCheck },
             { title: 'RBAC', href: '#', icon: Users },
-            { title: 'Tenant Provisioning', href: '#', icon: Building2 },
+            {
+                title: 'Tenant Provisioning',
+                href: platformTenantsIndex(),
+                icon: Building2,
+            },
         ],
     },
 ];

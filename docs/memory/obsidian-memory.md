@@ -1,6 +1,6 @@
 # Opti-Asset — Agent Memory
 
-_Terakhir diperbarui: 2026-09-26 (T01 Tenancy Foundation selesai — implementasi AMS v2 dimulai)._
+_Terakhir diperbarui: 2026-09-26 (T01 + T01b selesai — tenancy foundation & platform tenant CRUD)._
 
 ## Keputusan arsitektur & konvensi (binding)
 
@@ -16,7 +16,8 @@ _Terakhir diperbarui: 2026-09-26 (T01 Tenancy Foundation selesai — implementas
 - SAML SSO live di `feature/saml-sso` (epic #1, tiket #2–#7, PR #8 open, jangan merge tanpa approval).
 - Dashboard shell acrux-style ada (masih mock data).
 - **T01 (#9) SELESAI** di `feature/saml-sso`: Tenant model + fail-closed scoping + harness isolasi (12 test) — 45 test hijau, pint/phpstan bersih; komitmen per tiket dimulai dari tiket ini. UI skills (impeccable/ui-ux-pro-max, shadcn) mulai dipakai dari T03 (halaman klasifikasi pertama).
-- **Frontier berikutnya:** T02 (#10) RBAC Skeleton — blocked oleh T01 saja → terbuka; T03 (#11) Classification Chain juga terbuka (blockers T01+T02, tunggu T02 bila strict). `gh` CLI berfungsi kembali di environment ini (GitHub MCP **Bad credentials** — jangan pakai untuk repo ini).
+- **T01b (#23, baru) SELESAI** — Platform Tenant CRUD di `/platform/tenants` (grill 2026-09-26: full CRUD ditarik maju dari T09; area admin terpusat di luar middleware `tenant`; platform admin = akun bootstrap `tenant_id = null`; tanpa hard delete — transisi status saja). Konvensi baru: paginasi Laravel di props Inertia itu **flat** (`tenants.total`, bukan `meta.total`); `<Form>` Inertia wajib spread `{...action.form()}`; kedua middleware context (`tenant` & platform) diawali `TenantContext::end()` (aman Octane/worker/test in-process). Primitif shadcn `table` & `pagination` kini ada; halaman platform = pattern tabel solid + toolbar URL-state + dialog konfirmasi untuk aksi destruktif.
+- **Frontier berikutnya:** T02 (#10) RBAC Skeleton — blocked oleh T01 saja → terbuka; T03 (#11) Classification Chain terbuka setelah T02. `gh` CLI berfungsi di environment ini (GitHub MCP **Bad credentials** — jangan pakai untuk repo ini). Screenshot UI perlu IdP lokal / keputusan backdoor dev — sengaja tidak dibuat (rules §1.2).
 - Draft lokal tiket tetap di `.scratch/ams-v2/issues/` (sinkron konsep dengan #9–#22).
 
 ## Risiko & catatan sesi berikutnya

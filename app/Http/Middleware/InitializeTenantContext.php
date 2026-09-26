@@ -21,10 +21,16 @@ class InitializeTenantContext
     /**
      * Handle an incoming request.
      *
+     * Any stale tenant context is ended first: in-process request reuse
+     * (tests, Octane, queue workers) must never inherit the previous
+     * request's tenant, and the guest/403 paths must leave NO context.
+     *
      * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
+        TenantContext::end();
+
         $user = $request->user();
 
         if ($user !== null) {
