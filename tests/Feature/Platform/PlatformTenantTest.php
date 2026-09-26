@@ -29,17 +29,20 @@ class PlatformTenantTest extends TestCase
     }
 
     /**
-     * A platform admin: allowlisted email, zero tenant memberships.
+     * A platform admin: promoted superadmin flag (T01d criterion).
      * Idempotent — tests may call this several times in one test.
      */
     protected function platformAdmin(): User
     {
-        return User::query()->firstOrCreate(
+        $admin = User::query()->firstOrCreate(
             ['email' => 'boss@optigate.test'],
             array_merge(User::factory()->definition(), [
                 'email' => 'boss@optigate.test',
             ]),
         );
+        $admin->promoteIfAllowlisted();
+
+        return $admin->refresh();
     }
 
     public function test_bootstrap_accounts_reach_the_tenant_index(): void

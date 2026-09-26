@@ -182,8 +182,14 @@ class SamlController extends Controller
                 // making password login impossible.
                 'password' => Hash::make(Str::random(64)),
                 'email_verified_at' => now(),
+                'is_superadmin' => false,
             ])->save();
         }
+
+        // Bootstrap seed (T01d): allowlisted emails are promoted to
+        // superadmin at login; the flag then lives in the database, so
+        // grant/revoke no longer requires an .env change.
+        $user->promoteIfAllowlisted();
 
         Auth::login($user);
 

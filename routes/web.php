@@ -36,9 +36,13 @@ Route::post('logout', function () {
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
+});
 
-    // Tenant switching (T01c): validates membership ownership + active
-    // tenant, stores the session pointer, writes the audit row.
+// Tenant switching (T01c/T01d) sits OUTSIDE the `tenant` middleware:
+// switching is how a superadmin first ACQUIRES a context, so the request
+// must not be redirected for lacking one. Target validation (membership
+// or superadmin, active tenant) and the audit row happen in the controller.
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('tenant/switch', [TenantSwitchController::class, 'store'])
         ->name('tenant.switch');
 });

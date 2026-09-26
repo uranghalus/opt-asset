@@ -195,27 +195,31 @@ class TenantMembershipTest extends TestCase
         $this->assertFalse(TenantContext::check());
     }
 
-    public function test_platform_area_requires_allowlisted_email_with_zero_memberships(): void
+    public function test_platform_access_follows_the_superadmin_flag(): void
     {
-        // Allowlisted, zero memberships → passes.
+        // Superseded by T01d: the gate is the data-driven superadmin flag
+        // (promotion happens at SAML login), not membership count. A
+        // superadmin reaches the platform area WITH memberships too.
         $admin = User::factory()->create(['email' => 'boss@optigate.test']);
+        $admin->promoteIfAllowlisted();
+        $admin->memberships()->create([
+            'tenant_id' => Tenant::factory()->create()->id,
+            'is_default' => true,
+        ]);
         $this->actingAs($admin)
             ->get(route('platform.tenants.index'))
             ->assertOk();
 
-        // NOT allowlisted, zero memberships → the JIT hole is closed.
-        $stranger = User::factory()->create();
-        $this->actingAs($stranger)
+        // Allowlisted email but never promoted (no SAML login yet) → 404:
+        // the flag is the gate, raw config matching alone grants nothing.
+        $unpromoted = User::factory()->create(['email' => 'member@optigate.test']);
+        $this->actingAs($unpromoted)
             ->get(route('platform.tenants.index'))
             ->assertNotFound();
 
-        // Allowlisted email but HAS memberships → tenant user, 404.
-        $member = User::factory()->create(['email' => 'member@optigate.test']);
-        $member->memberships()->create([
-            'tenant_id' => Tenant::factory()->create()->id,
-            'is_default' => true,
-        ]);
-        $this->actingAs($member)
+        // NOT allowlisted, never promoted → the JIT hole stays closed.
+        $stranger = User::factory()->create();
+        $this->actingAs($stranger)
             ->get(route('platform.tenants.index'))
             ->assertNotFound();
     }

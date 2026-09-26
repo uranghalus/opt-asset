@@ -13,8 +13,8 @@ declare module '@inertiajs/core' {
             auth: Auth;
             sidebarOpen: boolean;
             tenancy: {
-                /** Tenants the user is a member of (switcher options). */
-                memberships: { id: string; name: string; code: string }[];
+                /** Tenants the session may enter (superadmin: all active). */
+                switchable: { id: string; name: string; code: string }[];
                 /** The tenant currently being acted in, if any. */
                 active: { id: string; name: string; code: string } | null;
             };

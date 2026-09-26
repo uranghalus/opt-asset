@@ -73,7 +73,10 @@ class TenantContext
      */
     public function switch(User $user, string $tenantId): bool
     {
-        $target = $this->activeMembershipTenant($user, $tenantId);
+        // Superadmin: any active tenant is enterable, membership or not.
+        $target = $user->is_superadmin
+            ? $this->activeTenant($tenantId)
+            : $this->activeMembershipTenant($user, $tenantId);
 
         if ($target === null) {
             return false;
@@ -98,22 +101,44 @@ class TenantContext
 
     /**
      * Resolve the tenant for the user without initializing anything.
+     *
+     * Superadmins may act in ANY active tenant (session pointer honored
+     * without a membership); regular users are bound to memberships.
      */
     public function resolveFor(User $user): ?Tenant
     {
         $sessionTenantId = session(self::SESSION_KEY);
 
         if (is_string($sessionTenantId) && $sessionTenantId !== '') {
-            $tenant = $this->activeMembershipTenant($user, $sessionTenantId);
+            $tenant = $user->is_superadmin
+                ? $this->activeTenant($sessionTenantId)
+                : $this->activeMembershipTenant($user, $sessionTenantId);
 
             if ($tenant !== null) {
                 return $tenant;
             }
-            // Stale session pointer: self-heal by falling through to the
-            // default membership below.
+            // Stale pointer: self-heal by falling through below.
+        }
+
+        if ($user->is_superadmin) {
+            // No pointer: fall back to a membership default, else the
+            // first active tenant — a superadmin is never context-less.
+            return $this->defaultMembershipTenant($user)
+                ?? Tenant::query()->where('status', 'active')->orderBy('name')->first();
         }
 
         return $this->defaultMembershipTenant($user);
+    }
+
+    /**
+     * An active tenant by id, regardless of memberships (superadmin path).
+     */
+    protected function activeTenant(string $tenantId): ?Tenant
+    {
+        return Tenant::query()
+            ->whereKey($tenantId)
+            ->where('status', 'active')
+            ->first();
     }
 
     /**

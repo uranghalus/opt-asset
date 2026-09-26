@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $saml_name_id
  * @property string $password
  * @property string $status
+ * @property bool $is_superadmin
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -48,6 +49,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'is_superadmin' => 'boolean',
         ];
     }
 
@@ -83,13 +85,30 @@ class User extends Authenticatable
     }
 
     /**
-     * Whether this account may administer the central platform area:
-     * zero tenant memberships AND an allowlisted email (T01c — the
-     * fail-closed replacement for "any JIT user without a tenant").
+     * Promote this account to superadmin when its email is on the bootstrap
+     * allowlist (config platform.admin_emails). Called from the SAML JIT
+     * path; safe to call repeatedly — promotion is one-way from this entry
+     * point, and revocation happens in data (T11 admin UI).
+     */
+    public function promoteIfAllowlisted(): void
+    {
+        $allowlist = array_map('strtolower', (array) config('platform.admin_emails', []));
+
+        if (in_array(strtolower($this->email), $allowlist, true) && ! $this->is_superadmin) {
+            $this->forceFill(['is_superadmin' => true])->save();
+        }
+    }
+
+    /**
+     * Whether this account may administer the central platform area
+     * (T01d): the data-driven superadmin flag — with or without tenant
+     * memberships. The zero-membership rule from T01c is superseded.
      */
     public function isPlatformAdmin(): bool
     {
-        return $this->memberships()->doesntExist()
-            && in_array(strtolower($this->email), config('platform.admin_emails', []), true);
+        // Defensive null-coalesce: in-memory instances created before the
+        // attribute was set (e.g. pre-insert forceFill paths) would return
+        // null despite the column's false default.
+        return (bool) ($this->is_superadmin ?? false);
     }
 }

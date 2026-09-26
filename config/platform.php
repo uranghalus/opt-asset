@@ -15,9 +15,11 @@ return [
     |
     */
 
-    'admin_emails' => array_values(array_filter(array_map(
-        'strtolower',
-        explode(',', (string) env('PLATFORM_ADMIN_EMAILS', '')),
-    ))),
+    // Laravel parses comma-separated env values into arrays; be tolerant
+    // of both a plain string and the pre-split array form.
+    'admin_emails' => array_filter(array_map(
+        fn ($email) => strtolower(trim((string) $email)),
+        (array) env('PLATFORM_ADMIN_EMAILS', []),
+    )),
 
 ];

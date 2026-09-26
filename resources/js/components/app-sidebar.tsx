@@ -20,6 +20,7 @@ import { useState } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { SidebarTenantSwitcher } from '@/components/sidebar-tenant-switcher';
 import { Button } from '@/components/ui/button';
 import {
     Sidebar,
@@ -191,6 +192,8 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent className="py-2">
+                <SidebarTenantSwitcher />
+
                 {navGroups.map((group) => (
                     <NavMain
                         key={group.title}

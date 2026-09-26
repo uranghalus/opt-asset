@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
 use App\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,13 +46,15 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
             ],
 
-            // Tenant switcher data (T01c): the memberships behind the
-            // switcher and the tenant currently being acted in. Empty for
-            // guests and platform admins (no memberships by design).
+            // Tenant switcher data (T01c/T01d): superadmins may switch into
+            // ANY active tenant; regular users only into their memberships.
+            // Suspended tenants are never switchable, fail-closed.
             'tenancy' => $user === null
-                ? ['memberships' => collect(), 'active' => null]
+                ? ['switchable' => collect(), 'active' => null]
                 : [
-                    'memberships' => $user->tenants()->orderBy('name')->get(['tenants.id', 'tenants.name', 'tenants.code']),
+                    'switchable' => $user->is_superadmin
+                        ? Tenant::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code'])
+                        : $user->tenants()->where('tenants.status', 'active')->orderBy('name')->get(['tenants.id', 'tenants.name', 'tenants.code']),
                     'active' => ($tenant = app(TenantContext::class)->resolveFor($user)) !== null
                         ? ['id' => $tenant->id, 'name' => $tenant->name, 'code' => $tenant->code]
                         : null,
