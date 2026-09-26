@@ -13,6 +13,8 @@ _Terakhir diperbarui: 2026-09-26 (T01 + T01b selesai — tenancy foundation & pl
 
 ## Status proyek (2026-09-26)
 
+- **Data live (tinker, 26-09):** superadmin@appdutamall.com attached ke tenant DMB (Dutamall Banjarmasin) sebagai user tenant — keputusan grill 26-09; akun ini KEHILANGAN akses /platform/tenants (tenant_id ≠ null, bukan lagi platform admin). SAAT INI TIDAK ADA platform admin aktif — bila perlu area platform lagi, buat user SSO baru tanpa tenant, atau tunggu T02 (RBAC) memutuskan permission sentral. Migrasi paralel `nullify_superadmin_tenant_id` dihapus (belum pernah di-commit; sudah terlanjur jalan batch 2 — rollback manual bila perlu).
+
 - SAML SSO live di `feature/saml-sso` (epic #1, tiket #2–#7, PR #8 open, jangan merge tanpa approval).
 - Dashboard shell acrux-style ada (masih mock data).
 - **T01 (#9) SELESAI** di `feature/saml-sso`: Tenant model + fail-closed scoping + harness isolasi (12 test) — 45 test hijau, pint/phpstan bersih; komitmen per tiket dimulai dari tiket ini. UI skills (impeccable/ui-ux-pro-max, shadcn) mulai dipakai dari T03 (halaman klasifikasi pertama).
