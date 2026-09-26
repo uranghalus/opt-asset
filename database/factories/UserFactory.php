@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Tenant;
+use App\Models\TenantMembership;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -60,11 +61,18 @@ class UserFactory extends Factory
     }
 
     /**
-     * Attach the user to the given tenant (creates one when omitted).
+     * Attach the user to the given tenant (creates one when omitted) via a
+     * default membership (T01c multi-membership).
      */
     public function forTenant(?Tenant $tenant = null): static
     {
-        return $this->for($tenant ?? Tenant::factory());
+        return $this->afterCreating(function (User $user) use ($tenant) {
+            TenantMembership::query()->create([
+                'user_id' => $user->id,
+                'tenant_id' => ($tenant ?? Tenant::factory()->create())->id,
+                'is_default' => true,
+            ]);
+        });
     }
 
     /**

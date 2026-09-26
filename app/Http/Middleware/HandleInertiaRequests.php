@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Tenancy\TenantContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,12 +36,27 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
+
+            // Tenant switcher data (T01c): the memberships behind the
+            // switcher and the tenant currently being acted in. Empty for
+            // guests and platform admins (no memberships by design).
+            'tenancy' => $user === null
+                ? ['memberships' => collect(), 'active' => null]
+                : [
+                    'memberships' => $user->tenants()->orderBy('name')->get(['tenants.id', 'tenants.name', 'tenants.code']),
+                    'active' => ($tenant = app(TenantContext::class)->resolveFor($user)) !== null
+                        ? ['id' => $tenant->id, 'name' => $tenant->name, 'code' => $tenant->code]
+                        : null,
+                ],
+
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

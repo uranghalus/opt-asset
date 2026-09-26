@@ -59,7 +59,14 @@ class SamlController extends Controller
         // make a later IdP-initiated response look state-forged.
         request()->session()->forget('state');
 
-        return redirect()->intended(route('dashboard'));
+        // Route by membership, not by a single tenant column (T01c):
+        // platform admins (zero memberships + allowlist) land in their area,
+        // members land on the dashboard acting inside their default tenant.
+        $defaultRoute = $user->isPlatformAdmin()
+            ? route('platform.tenants.index')
+            : route('dashboard');
+
+        return redirect()->intended($defaultRoute);
     }
 
     /**

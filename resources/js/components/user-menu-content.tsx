@@ -1,5 +1,6 @@
 import { Link, router } from '@inertiajs/react';
 import { LogOut, Settings } from 'lucide-react';
+import { TenantSwitcher } from '@/components/tenant-switcher';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -32,6 +33,7 @@ export function UserMenuContent({ user }: Props) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <TenantSwitcher />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link

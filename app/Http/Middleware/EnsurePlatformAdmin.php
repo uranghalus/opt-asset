@@ -8,14 +8,21 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Gate for the central platform admin area (T01b).
+ * Gate for the central platform admin area (T01b, tightened by T01c).
  *
- * Platform admins are bootstrap accounts: authenticated SSO users with no
- * tenant attachment (tenant_id = null). Fail-closed on both edges:
+ * Platform admin criterion (grill decision 2026-09-26): an authenticated SSO
+ * user with ZERO tenant memberships whose email is on the explicit
+ * allowlist (config platform.admin_emails from PLATFORM_ADMIN_EMAILS).
  *
+ * This closes the T01b hole where every JIT-provisioned SSO user (born
+ * without a tenant) automatically qualified as platform admin — anyone in
+ * the organization could have administered all tenants.
+ *
+ * Fail-closed on all edges:
  *  - guests are handed to the SSO redirect (auth middleware upstream does
  *    this; kept here as a defensive re-check);
- *  - tenant users get 404 — no evidence the area exists.
+ *  - non-allowlisted users — including membership-less JIT users — get 404:
+ *    no evidence the area exists.
  *
  * Tenancy is deliberately never initialized on platform routes: the surface
  * manages central records in central context. This middleware must never be
@@ -42,7 +49,7 @@ class EnsurePlatformAdmin
             return redirect()->route('saml.redirect');
         }
 
-        if ($user->tenant_id !== null) {
+        if (! $user->isPlatformAdmin()) {
             abort(404);
         }
 

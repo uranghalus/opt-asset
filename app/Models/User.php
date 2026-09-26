@@ -5,15 +5,16 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property string|null $tenant_id
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
@@ -26,7 +27,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Tenant|null $tenant
+ * @property-read Collection<int, TenantMembership> $memberships
+ * @property-read Collection<int, Tenant> $tenants
  */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
@@ -50,12 +52,44 @@ class User extends Authenticatable
     }
 
     /**
-     * The central tenant this user belongs to (null for bootstrap accounts).
+     * The user's tenant memberships (multi-membership, T01c).
      *
-     * @return BelongsTo<Tenant, $this>
+     * @return HasMany<TenantMembership, $this>
      */
-    public function tenant(): BelongsTo
+    public function memberships(): HasMany
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->hasMany(TenantMembership::class);
+    }
+
+    /**
+     * All tenants the user is a member of, through the pivot.
+     *
+     * @return BelongsToMany<Tenant, $this, TenantMembership, 'pivot'>
+     */
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_memberships')
+            ->using(TenantMembership::class)
+            ->withPivot('is_default')
+            ->withTimestamps();
+    }
+
+    /**
+     * The user's default membership, if any.
+     */
+    public function defaultMembership(): ?TenantMembership
+    {
+        return $this->memberships->firstWhere('is_default', true);
+    }
+
+    /**
+     * Whether this account may administer the central platform area:
+     * zero tenant memberships AND an allowlisted email (T01c — the
+     * fail-closed replacement for "any JIT user without a tenant").
+     */
+    public function isPlatformAdmin(): bool
+    {
+        return $this->memberships()->doesntExist()
+            && in_array(strtolower($this->email), config('platform.admin_emails', []), true);
     }
 }

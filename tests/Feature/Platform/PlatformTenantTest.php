@@ -13,19 +13,33 @@ use Tests\TestCase;
  * Platform tenant CRUD (ticket T01b / GitHub #23).
  *
  * The platform surface is central context by definition: tenancy is never
- * initialized here, bootstrap accounts (users without a tenant) administer
- * it, and tenant users get no evidence it exists (404, fail-closed).
+ * initialized here. Since T01c, platform admins are zero-membership users
+ * with an allowlisted email (grill decision 2026-09-26) — the old "any JIT
+ * user without a tenant" criterion was a security hole and is closed.
  */
 class PlatformTenantTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['platform.admin_emails' => ['boss@optigate.test']]);
+    }
+
     /**
-     * A bootstrap account: authenticated via SSO, attached to no tenant.
+     * A platform admin: allowlisted email, zero tenant memberships.
+     * Idempotent — tests may call this several times in one test.
      */
     protected function platformAdmin(): User
     {
-        return User::factory()->create(); // tenant_id = null
+        return User::query()->firstOrCreate(
+            ['email' => 'boss@optigate.test'],
+            array_merge(User::factory()->definition(), [
+                'email' => 'boss@optigate.test',
+            ]),
+        );
     }
 
     public function test_bootstrap_accounts_reach_the_tenant_index(): void
