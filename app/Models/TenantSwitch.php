@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Audit row for one tenant switch (T01c: switches are audited from day one).
+ * Audit row for one tenant switch (switches are audited from day one).
  *
  * Central table — switch events concern users and tenants, not tenant-owned
- * domain data, so it carries no tenant scope. Superseded by the full
- * audit_logs surface landing with T05.
+ * domain data, so it carries no tenant scope.
  *
  * @property int $id
  * @property int $user_id

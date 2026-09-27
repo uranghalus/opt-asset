@@ -10,7 +10,10 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
-            auth: Auth;
+            auth: Auth & {
+                /** The tenant id resolved for this session (set at login). */
+                tenant_id: string | null;
+            };
             sidebarOpen: boolean;
             tenancy: {
                 /** Tenants the session may enter (superadmin: all active). */

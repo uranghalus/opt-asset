@@ -20,7 +20,7 @@ use function Tests\Support\createMachineTable;
  * Every future domain table must pass the same shape of proof: acting as
  * tenant A never returns tenant B's rows, and no acting tenant returns
  * nothing. This file is the executable reference for that contract
- * (PROJECT-PLAN Phase 1, ticket T01 / GitHub #9).
+ * (PROJECT-PLAN Phase 1).
  */
 class TenantIsolationTest extends TestCase
 {

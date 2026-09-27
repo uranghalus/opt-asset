@@ -8,21 +8,18 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Gate for the central platform admin area (T01b, tightened by T01c).
+ * Gate for the central platform admin area (/platform/business-units).
  *
- * Platform admin criterion (grill decision 2026-09-26): an authenticated SSO
- * user with ZERO tenant memberships whose email is on the explicit
- * allowlist (config platform.admin_emails from PLATFORM_ADMIN_EMAILS).
- *
- * This closes the T01b hole where every JIT-provisioned SSO user (born
- * without a tenant) automatically qualified as platform admin — anyone in
- * the organization could have administered all tenants.
+ * Platform admin criterion (grill decision 2026-09-27): the single gate in
+ * config/platform.php — a persisted superadmin flag OR the environment
+ * fallback grant (PLATFORM_ADMIN_EMAILS). The fallback is what lets a fresh
+ * install reach the surface and create the first business unit before any
+ * SAML login has stamped the flag into the database.
  *
  * Fail-closed on all edges:
  *  - guests are handed to the SSO redirect (auth middleware upstream does
  *    this; kept here as a defensive re-check);
- *  - non-allowlisted users — including membership-less JIT users — get 404:
- *    no evidence the area exists.
+ *  - everyone else without a grant gets 404: no evidence the area exists.
  *
  * Tenancy is deliberately never initialized on platform routes: the surface
  * manages central records in central context. This middleware must never be

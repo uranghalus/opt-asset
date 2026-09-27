@@ -9,12 +9,12 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 /**
- * Switch the acting tenant for the authenticated user (T01c).
+ * Switch the acting tenant (business unit) for the authenticated user.
  *
- * Validates an active membership on the target tenant, stores the session
- * pointer, and writes the audit row — all inside TenantContext::switch().
- * Cross-tenant attempts without membership are rejected 403 before any
- * state changes.
+ * Validates an active membership on the target tenant (or superadmin
+ * access), stores the session pointer, and writes the audit row — all
+ * inside TenantContext::switch(). Cross-tenant attempts without access are
+ * rejected 403 before any state changes.
  */
 class TenantSwitchController extends Controller
 {
@@ -22,7 +22,7 @@ class TenantSwitchController extends Controller
      * Handle the switch request.
      *
      * Side effects: session `tenant.active_id` pointer, a `tenant_switches`
-     * audit row, and a toast confirming the new acting tenant.
+     * audit row, and a toast confirming the new acting business unit.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -35,13 +35,13 @@ class TenantSwitchController extends Controller
             $validated['tenant_id'],
         );
 
-        abort_unless($switched, 403, 'No active membership on that tenant.');
+        abort_unless($switched, 403, 'No active membership on that business unit.');
 
         $tenantName = Tenant::query()->whereKey($validated['tenant_id'])->value('name');
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('Now acting in :tenant.', [
+            'message' => __('Sekarang aktif di :tenant.', [
                 'tenant' => $tenantName !== null ? (string) $tenantName : $validated['tenant_id'],
             ]),
         ]);

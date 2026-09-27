@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        // Fail-closed tenancy (T01): app routes under an authenticated user
+        // Fail-closed tenancy: app routes under an authenticated user
         // always run inside a tenant context. SAML endpoints (redirect, ACS,
         // SLS, metadata) and logout stay outside it — the acting tenant can
         // only be resolved after authentication completes.

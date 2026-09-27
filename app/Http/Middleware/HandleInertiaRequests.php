@@ -39,24 +39,36 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
+        // Resolved once per request: the acting tenant backs both the
+        // auth.tenant_id payload and the switcher's active state.
+        $activeTenant = $user === null
+            ? null
+            : app(TenantContext::class)->resolveFor($user);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
                 'user' => $user,
+
+                // The tenant id resolved for this session, set into the
+                // user data on login (grill decision 2026-09-27): the
+                // membership pivot + session pointer stay the source of
+                // truth; this exposes the resolved value to the frontend.
+                'tenant_id' => $activeTenant?->getKey(),
             ],
 
-            // Tenant switcher data (T01c/T01d): superadmins may switch into
-            // ANY active tenant; regular users only into their memberships.
+            // Tenant switcher data: platform admins may switch into ANY
+            // active tenant; regular users only into their memberships.
             // Suspended tenants are never switchable, fail-closed.
             'tenancy' => $user === null
                 ? ['switchable' => collect(), 'active' => null]
                 : [
-                    'switchable' => $user->is_superadmin
+                    'switchable' => $user->isPlatformAdmin()
                         ? Tenant::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code'])
                         : $user->tenants()->where('tenants.status', 'active')->orderBy('name')->get(['tenants.id', 'tenants.name', 'tenants.code']),
-                    'active' => ($tenant = app(TenantContext::class)->resolveFor($user)) !== null
-                        ? ['id' => $tenant->id, 'name' => $tenant->name, 'code' => $tenant->code]
+                    'active' => $activeTenant !== null
+                        ? ['id' => $activeTenant->id, 'name' => $activeTenant->name, 'code' => $activeTenant->code]
                         : null,
                 ],
 

@@ -12,7 +12,8 @@ return new class extends Migration
      * The primary key is a ULID string, matching stancl/tenancy's
      * `GeneratesIds` convention and keeping tenant keys safe to embed in
      * URLs, queue payloads, and composite unique constraints. `code` is the
-     * human-usable identity of a tenant and is unique at the database level.
+     * human-usable identity of a business unit and is unique at the database
+     * level.
      */
     public function up(): void
     {
