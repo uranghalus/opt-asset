@@ -77,6 +77,10 @@ class TenantContext
      * Switch the user's active tenant, validating an active membership on
      * the target, and writing an audit row.
      *
+     * Side effects: sets the session pointer, rebinds spatie's permissions
+     * team id to the target, unsets cached role/permission relations (T02),
+     * and writes the audit row.
+     *
      * @return bool true when switched; false when the user has no active
      *              membership on the target (no state is changed)
      */
@@ -98,6 +102,12 @@ class TenantContext
         $fromId = $this->resolveFor($user)?->getKey();
 
         session([self::SESSION_KEY => $target->getKey()]);
+
+        // Rebind spatie's permissions team id to the target and reset cached
+        // relations (T02 package rule): within-request authorization after
+        // the switch must resolve the new team, not the previous one.
+        setPermissionsTeamId($target->getKey());
+        $user->unsetRelation('roles')->unsetRelation('permissions');
 
         TenantSwitch::query()->create([
             'user_id' => $user->id,

@@ -2,12 +2,12 @@
 
 namespace App\Rbac;
 
-use App\Enums\Permission;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\RbacSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -31,7 +31,9 @@ class RbacProvisioner
      * missing.
      *
      * Side effects: writes to the spatie `roles`/`role_has_permissions`
-     * tables on first call per tenant.
+     * tables on first call per tenant; throws when the global template is
+     * missing (the RBAC seed was never run — fail closed rather than
+     * masking a broken setup with a hardcoded fallback).
      */
     public function ensureDefaultRole(Tenant $tenant): Role
     {
@@ -41,15 +43,24 @@ class RbacProvisioner
             return $existing;
         }
 
+        $template = $this->globalTemplateRole();
+
+        if ($template === null) {
+            throw new RuntimeException('The global template role `default` is missing; run the RbacSeeder first.');
+        }
+
         try {
-            return DB::transaction(function () use ($tenant): Role {
+            return DB::transaction(function () use ($tenant, $template): Role {
                 $role = Role::query()->create([
                     'name' => RbacSeeder::DEFAULT_ROLE,
                     'guard_name' => 'web',
                     'tenant_id' => $tenant->getKey(),
                 ]);
 
-                $role->syncPermissions([Permission::AssetsView->value]);
+                // The template is the single source of the landing permission
+                // set — new clones mirror it at clone time; later template
+                // changes never propagate to copies that already exist.
+                $role->syncPermissions($template->permissions->pluck('name')->all());
 
                 return $role;
             });
@@ -64,6 +75,17 @@ class RbacProvisioner
 
             return $winner;
         }
+    }
+
+    /**
+     * The global template role (team_id null) seeded by the RbacSeeder.
+     */
+    protected function globalTemplateRole(): ?Role
+    {
+        return Role::query()
+            ->where('name', RbacSeeder::DEFAULT_ROLE)
+            ->whereNull('tenant_id')
+            ->first();
     }
 
     /**

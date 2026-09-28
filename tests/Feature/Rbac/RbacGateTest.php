@@ -38,6 +38,13 @@ class RbacGateTest extends TestCase
             ->get('/_rbac-probe', fn () => response('ok'));
     }
 
+    /**
+     * A tenant user holding the named role (seeded fresh per tenant).
+     *
+     * @param  Tenant  $tenant  the tenant whose roles are ensured and assigned
+     * @param  string  $roleName  the seeded role name ('default' or 'Admin Tenant')
+     * @return User the created user with the role assigned for that team
+     */
     protected function userWithRole(Tenant $tenant, string $roleName): User
     {
         // The seeder is the sanctioned per-tenant seeding mechanism — re-run

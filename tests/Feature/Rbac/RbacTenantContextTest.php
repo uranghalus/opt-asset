@@ -105,6 +105,9 @@ class RbacTenantContextTest extends TestCase
 
         $this->assertTrue($context->switch($user, $second->getKey()));
 
+        // The switch itself rebinds the permissions team id to the target.
+        $this->assertSame($second->getKey(), getPermissionsTeamId());
+
         $resolved = $context->initializeFromUser($user);
 
         $this->assertTrue($resolved);
