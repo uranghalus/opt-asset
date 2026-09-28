@@ -35,12 +35,15 @@ class TenantContext
      *
      * The non-HTTP path (queue jobs, Artisan commands, tests).
      *
-     * Side effects: sets stancl Tenancy state and the `tenant.id` /
-     * `tenant.code` context log metadata.
+     * Side effects: sets stancl Tenancy state, binds spatie's permissions
+     * team id to this tenant (T02 — roles resolve per team in jobs too),
+     * and sets the `tenant.id` / `tenant.code` context log metadata.
      */
     public function initialize(Tenant $tenant): void
     {
         tenancy()->initialize($tenant);
+
+        setPermissionsTeamId($tenant->getKey());
 
         Context::add('tenant.id', (string) $tenant->getKey());
         Context::addHidden('tenant.code', $tenant->code);
@@ -50,6 +53,10 @@ class TenantContext
      * Resolve the acting tenant from the user's memberships and initialize
      * it: session membership → default membership → false (fail-closed,
      * no context on failure).
+     *
+     * Side effects: unsets cached role/permission relations (T02 package
+     * rule — a reused in-process user instance must never resolve another
+     * team's roles) and binds spatie's permissions team id via initialize.
      */
     public function initializeFromUser(User $user): bool
     {
@@ -58,6 +65,8 @@ class TenantContext
         if ($tenant === null) {
             return false;
         }
+
+        $user->unsetRelation('roles')->unsetRelation('permissions');
 
         $this->initialize($tenant);
 
@@ -200,10 +209,16 @@ class TenantContext
 
     /**
      * End the acting tenant context.
+     *
+     * Side effects: ends stancl Tenancy state, resets spatie's permissions
+     * team id (T02 — stale in-process team state must never leak into the
+     * next request), and forgets the context log metadata.
      */
     public function end(): void
     {
         tenancy()->end();
+
+        setPermissionsTeamId(null);
 
         Context::forget('tenant.id');
         Context::forget('tenant.code');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rbac\RbacProvisioner;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -183,7 +184,13 @@ class SamlController extends Controller
                 'password' => Hash::make(Str::random(64)),
                 'email_verified_at' => now(),
                 'is_superadmin' => false,
+                'saml_name_id' => $samlUser->getId(),
             ])->save();
+        } elseif ($user->saml_name_id !== $samlUser->getId()) {
+            // Re-linking (FR-15): the identity provider now sends a different
+            // NameID for this account — persist it so the SAML mapping stays
+            // truthful.
+            $user->forceFill(['saml_name_id' => $samlUser->getId()])->save();
         }
 
         // Bootstrap seed (T01d): allowlisted emails are promoted to
@@ -192,6 +199,11 @@ class SamlController extends Controller
         $user->promoteIfAllowlisted();
 
         Auth::login($user);
+
+        // JIT landing role (T02): every active membership without a role
+        // lands on the tenant's `default` view-only role, cloned from the
+        // global template when missing. Idempotent on every login.
+        app(RbacProvisioner::class)->assignDefaultRoles($user);
 
         return $user;
     }
