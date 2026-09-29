@@ -7,6 +7,7 @@ use App\Tenancy\FailClosedTenantScope;
 use App\Tenancy\TenantContextRequiredException;
 use Closure;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Stancl\Tenancy\Contracts\Tenant as TenantContract;
 
 /**
  * Tenant scoping for every domain model.
@@ -31,6 +32,8 @@ trait BelongsToTenant
 {
     /**
      * The central tenant this record belongs to.
+     *
+     * @return BelongsTo<Tenant, $this>
      */
     public function tenant(): BelongsTo
     {
@@ -45,16 +48,28 @@ trait BelongsToTenant
         static::addGlobalScope(new FailClosedTenantScope);
 
         static::creating(function (self $model): void {
-            if (! $model->getAttribute('tenant_id')) {
-                if (! tenancy()->initialized || tenancy()->tenant === null) {
+            // TenantContext convention: narrow stancl's `Tenant|Model|null`
+            // to the contract — a bound tenant IS a TenantContract.
+            $tenant = tenancy()->tenant;
+
+            if (! $tenant instanceof TenantContract) {
+                if (! $model->getAttribute('tenant_id')) {
                     throw new TenantContextRequiredException(sprintf(
                         'Cannot create %s without an acting tenant context.',
                         $model::class,
                     ));
                 }
 
-                $model->setAttribute('tenant_id', tenancy()->tenant->getTenantKey());
+                // Fixture-style writes (migrations, historical imports) may
+                // pre-stamp a tenant explicitly; without a context there is
+                // nothing to protect, so the explicit value stands.
+                return;
             }
+
+            // The acting tenant always wins: a tenant_id arriving from
+            // request input (mass assignment) must never cross the
+            // isolation boundary, even explicitly.
+            $model->setAttribute('tenant_id', $tenant->getTenantKey());
         });
     }
 
