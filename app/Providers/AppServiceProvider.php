@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\User;
 use App\Tenancy\TenantContext;
 use App\Tenancy\UlidIdentifierGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -39,11 +41,29 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureGates();
 
         Event::listen(
             SocialiteWasCalled::class,
             [Saml2ExtendSocialite::class, 'handle']
         );
+    }
+
+    /**
+     * Register the superadmin gate bypass (T02 grill 2026-09-28, Q5).
+     *
+     * The data-driven `is_superadmin` flag grants every ability; the
+     * callback MUST return true or null — never false — so other gates and
+     * policies keep running for everyone else. Spatie's own Gate::before
+     * (permission checks) safely falls through the same way.
+     */
+    protected function configureGates(): void
+    {
+        Gate::before(function ($user, string $ability): ?bool {
+            return $user instanceof User && $user->isPlatformAdmin()
+                ? true
+                : null;
+        });
     }
 
     /**

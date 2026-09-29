@@ -6,9 +6,11 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Tenancy\Facades\TenantContext;
 use App\Tenancy\TenantContext as TenantContextService;
+use Database\Seeders\RbacSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Laravel\Socialite\Facades\Socialite;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\FakeIdentityProvider;
 use Tests\TestCase;
 
@@ -41,6 +43,12 @@ class LoginTenantPinTest extends TestCase
         URL::forceRootUrl(config('app.url'));
 
         config(['platform.admin_emails' => ['superadmin@appdutamall.com']]);
+
+        // RBAC (T02): JIT landing-role provisioning runs on every SAML login
+        // and fail-closes when the global `default` template is missing —
+        // seed it so this suite exercises login settlement, not RBAC setup.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $this->seed(RbacSeeder::class);
     }
 
     public function test_login_pins_the_resolved_tenant_id_into_the_user_data(): void
