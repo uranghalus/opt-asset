@@ -1,6 +1,6 @@
 # Opti-Asset — Agent Memory
 
-_Terakhir diperbarui: 2026-09-29 (T03 breakdown 7 tiket #27–#33; PR #26 conflict-resolve merge origin/main — tenancy rebuild main + RBAC skeleton branch digabung)._
+_Terakhir diperbarui: 2026-09-30 (T03 berjalan: 3/7 tiket selesai #27–#29 — T02 landed via PR #26 merged `79c3e21`, chain schema + models/factories di `feature/classification-t03`)._
 
 ## Keputusan arsitektur & konvensi (binding)
 
@@ -35,6 +35,14 @@ _Terakhir diperbarui: 2026-09-29 (T03 breakdown 7 tiket #27–#33; PR #26 confli
 - **Spesifikasi gap temuan:** `locations` dirujuk `assets.lokasi_id` + `asset_mutations.from/to_location_id` (PRD §7) tapi tidak pernah didefinisikan — diselesaikan via ADR-0002 (T04).
 - **⚠️ Residual manual:** `AGENTS.md` masih menunjuk root `rules.md` (file asli `.ai/rules.md`) — client memblokir edit file tersebut; perlu perbaikan satu baris manual.
 - **Temuan audit route:** belum ada route yang memakai `permission:`/`role:` middleware — T03 akan menjadi pembuktian end-to-end pertama (403 utk role `default`, lolos utk `Admin Tenant`).
+
+## Update sesi 2026-09-30 (to-tickets + eksekusi 3/7 tiket T03)
+
+- **Breakdown T03 (#11) → 7 tiket tracer-bullet #27–#33** dengan native GitHub dependencies (`blocked_by` via database id) + label `ready-for-agent`: T03.0 Land T02 → T03.1 schema → T03.2 models+factories → T03.3 isolation+immutability proofs → T03.4 HTTP layer (`permission:classifications.manage`) → T03.5 UI cascading (impeccable pass pertama) → T03.6 DoD+ship (PR closes #11). Kuis user: breakdown disetujui; PR #26 fix+merge; scope hari itu ≈40% (tiket 01–03).
+- **T03.0 (#27) selesai:** PR #26 ternyata CONFLICTING (branch memotong sebelum merge #8; `origin/main` membawa rebuild tenancy `122ba17`). Merge origin/main ke branch, damai per-file (branch kanonik RBAC, main kanonik tenancy; SamlController = kedua import dipertahankan). Fix: `LoginTenantPinTest` (main) kini perlu seed `RbacSeeder` karena JIT provisioning berjalan di tiap SAML login (fail-closed tanpa template). **PR #26 merged `79c3e21`, #10 auto-closed.**
+- **T03.1 (#28) selesai:** migrasi `2026_09_29_100001_create_classification_chain` — 5 tabel, PK ULID, `tenant_id` FK cascade, parent FK **restrictOnDelete** (ADR-0001), unique `(tenant_id, code)` per level, items `(tenant_id, name)` + sub-cluster nullable. Penyempurnaan sadar: FK items→sub_cluster **restrict bukan null** (auto-unclassify melawan ADR-0001). 9 test skema.
+- **T03.2 (#29) selesai:** 5 model + 5 factory (state parent-wajib; code default 1 huruf di level atas; `Item::unclassified`). **Hardening `BelongsToTenant`:** docblock menjanjikan injected `tenant_id` selalu ditimpa, hook lama hanya men-stamp atribut kosong (fail-open) → kini context ada = acting tenant SELALU menang; tanpa context = explicit `tenant_id` diterima (fixture/import), kosong = throw. Regression test ada. Trait kini dianalisis L7 (T03 = konsumen pertama): narwos `TenantContract` ala `TenantContext::check`, `BelongsTo<Tenant, $this>`; ignore rule "used zero times" di phpstan.neon dihapus.
+- **Status akhir sesi:** 132 test / 441 assertion hijau; pint + phpstan L7 bersih; commit `c5df476` (skema) + `b0468df` (models) di `feature/classification-t03`. **Frontier berikutnya: #30** (isolation + immutability proofs per level, sebelum HTTP). Catatan: phpstan butuh `--memory-limit=1G` di mesin ini (limit PHP 128M crash); graphify CLI ada (`graphify update .` sukses) tapi tidak punya subcommand memory — §5.3 dipenuhi via log + memory file ini.
 
 ## Risiko & catatan sesi berikutnya
 
