@@ -146,7 +146,7 @@ function SidebarProvider({
                     } as React.CSSProperties
                 }
                 className={cn(
-                    "group/sidebar-wrapper flex min-h-svh w-full bg-transparent text-text-primary",
+                    "group/sidebar-wrapper flex h-dvh w-full overflow-hidden bg-transparent text-text-primary",
                     className,
                 )}
                 {...props}
@@ -227,7 +227,7 @@ function Sidebar({
             {/* This is what handles the sidebar gap on desktop */}
             <div
                 className={cn(
-                    "relative h-svh w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
+                    "relative h-full w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear",
                     "group-data-[collapsible=offcanvas]:w-0",
                     "group-data-[side=right]:rotate-180",
                     variant === "floating" || variant === "inset"
@@ -237,7 +237,7 @@ function Sidebar({
             />
             <div
                 className={cn(
-                    "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
+                    "fixed inset-y-0 z-10 hidden box-border h-dvh w-(--sidebar-width) overflow-hidden transition-[left,right,width] duration-200 ease-linear md:flex",
                     side === "left"
                         ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
                         : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -251,7 +251,7 @@ function Sidebar({
             >
                 <div
                     data-sidebar="sidebar"
-                    className="bg-sidebar backdrop-blur-[20px] flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border-border-glass group-data-[variant=floating]:shadow-sm"
+                    className="bg-sidebar backdrop-blur-[20px] flex min-h-0 h-full w-full flex-col overflow-hidden group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border-border-glass group-data-[variant=floating]:shadow-sm"
                 >
                     {children}
                 </div>
@@ -320,7 +320,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
         <main
             data-slot="sidebar-inset"
             className={cn(
-                "relative flex max-w-full min-h-svh flex-1 flex-col",
+                "relative flex max-w-full h-full min-h-0 flex-1 flex-col overflow-hidden",
                 className,
             )}
             {...props}
@@ -384,7 +384,7 @@ function SidebarContent({ className, ...props }: React.ComponentProps<"div">) {
             data-slot="sidebar-content"
             data-sidebar="content"
             className={cn(
-                "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+                "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden group-data-[collapsible=icon]:overflow-hidden",
                 className,
             )}
             {...props}

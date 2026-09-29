@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tenant;
 use App\Models\User;
+use App\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -59,7 +61,15 @@ class SamlController extends Controller
         // make a later IdP-initiated response look state-forged.
         request()->session()->forget('state');
 
-        return redirect()->intended(route('dashboard'));
+        // Route by membership, not by a single tenant column:
+        // platform admins (env fallback grant or superadmin flag) land in
+        // their area, members land on the dashboard acting inside their
+        // default tenant.
+        $defaultRoute = $user->isPlatformAdmin()
+            ? route('platform.business-units.index')
+            : route('dashboard');
+
+        return redirect()->intended($defaultRoute);
     }
 
     /**
@@ -77,7 +87,7 @@ class SamlController extends Controller
                 'exception' => $exception,
             ]);
 
-            return redirect()->route('login')->with('status', 'You have been logged out.');
+            return redirect()->route('home')->with('status', 'You have been logged out.');
         }
     }
 
@@ -138,8 +148,17 @@ class SamlController extends Controller
     }
 
     /**
-     * Find or create the local account for a SAML-authenticated identity and
-     * log them in.
+     * Find or create the local account for a SAML-authenticated identity,
+     * log them in, and settle their tenant data.
+     *
+     * Settling (grill decision 2026-09-27):
+     *  - allowlisted emails are promoted (env fallback grant → DB flag);
+     *  - a platform admin with no membership is attached as the default
+     *    member of the first active tenant when one exists, so the resolved
+     *    tenant id can be pinned into the session's user data;
+     *  - the resolved tenant id is stored in the session (`tenant.active_id`)
+     *    — "tenant ID set within the user data upon login" — and exposed on
+     *    the auth payload by HandleInertiaRequests.
      *
      * @throws LightSamlException
      */
@@ -147,9 +166,9 @@ class SamlController extends Controller
     {
         // Log raw attributes in debug mode so we can inspect what the IdP sends.
         Log::debug('SAML assertion received.', [
-            'id'         => $samlUser->getId(),
-            'name'       => $samlUser->getName(),
-            'email'      => $samlUser->getEmail(),
+            'id' => $samlUser->getId(),
+            'name' => $samlUser->getName(),
+            'email' => $samlUser->getEmail(),
             'attributes' => $samlUser->getRaw(),
         ]);
 
@@ -157,7 +176,7 @@ class SamlController extends Controller
 
         if (! $email) {
             Log::warning('SAML: no email found in assertion.', [
-                'id'         => $samlUser->getId(),
+                'id' => $samlUser->getId(),
                 'attributes' => $samlUser->getRaw(),
             ]);
 
@@ -168,19 +187,59 @@ class SamlController extends Controller
 
         if (! $user->exists) {
             $user->forceFill([
-                'name'              => $samlUser->getName() ?: $email,
-                'email'             => $email,
+                'name' => $samlUser->getName() ?: $email,
+                'email' => $email,
                 // SAML accounts authenticate through the identity provider, so
                 // an unguessable password keeps the column satisfied while
                 // making password login impossible.
-                'password'          => Hash::make(Str::random(64)),
+                'password' => Hash::make(Str::random(64)),
                 'email_verified_at' => now(),
+                'is_superadmin' => false,
             ])->save();
         }
+
+        // Bootstrap seed: allowlisted emails are promoted to
+        // superadmin at login; the flag then lives in the database, so
+        // grant/revoke no longer requires an .env change.
+        $user->promoteIfAllowlisted();
+
+        $this->settleTenantData($user, ['name_id' => $samlUser->getId()]);
 
         Auth::login($user);
 
         return $user;
+    }
+
+    /**
+     * Settle the user's tenant data after authentication (see loginUser).
+     *
+     * @param  array<string, mixed>  $raw
+     */
+    protected function settleTenantData(User $user, array $raw = []): void
+    {
+        // Correlate the SSO identity for future per-tenant SSO work (T09).
+        if ($user->saml_name_id === null && isset($raw['name_id']) && is_string($raw['name_id']) && $raw['name_id'] !== '') {
+            $user->forceFill(['saml_name_id' => $raw['name_id']])->save();
+        }
+
+        // Platform admins are attached to the first active tenant so a
+        // resolved tenant id exists for the dashboard surface; regular
+        // members keep whatever memberships provisioning gave them.
+        if ($user->isPlatformAdmin()
+            && ! $user->memberships()->exists()
+            && ($first = Tenant::query()->where('status', 'active')->orderBy('name')->first()) !== null) {
+            $user->memberships()->create([
+                'tenant_id' => $first->getKey(),
+                'is_default' => true,
+            ]);
+        }
+
+        // Pin the resolved tenant id into the session's user data at login.
+        $resolvedTenantId = app(TenantContext::class)->resolveFor($user)?->getKey();
+
+        if ($resolvedTenantId !== null) {
+            session([TenantContext::SESSION_KEY => $resolvedTenantId]);
+        }
     }
 
     /**
@@ -207,7 +266,9 @@ class SamlController extends Controller
         // Strategy 3 – brute-force scan of every raw attribute value.
         foreach ($samlUser->getRaw() as $attribute) {
             foreach ($attribute->getAllAttributeValues() as $value) {
-                $string = method_exists($value, 'getValue') ? $value->getValue() : (string) $value;
+                $string = is_object($value) && method_exists($value, 'getValue')
+                    ? $value->getValue()
+                    : (string) $value;
                 if (filter_var($string, FILTER_VALIDATE_EMAIL)) {
                     return $string;
                 }
@@ -235,7 +296,7 @@ class SamlController extends Controller
     protected function loginFailure(): RedirectResponse
     {
         return redirect()
-            ->route('login')
+            ->route('home')
             ->withErrors(['saml' => 'Sign-in with your organization account failed. Please try again.']);
     }
 }

@@ -48,7 +48,13 @@ const applyTheme = (appearance: Appearance): void => {
 
     const isDark = isDarkMode(appearance);
 
+    // DESIGN.md documents the data-theme switch; the .dark class remains for
+    // the Tailwind custom variant and existing selectors.
     document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.setAttribute(
+        'data-theme',
+        isDark ? 'dark' : 'light',
+    );
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
 

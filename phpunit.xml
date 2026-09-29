@@ -32,5 +32,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Deterministic tests: the bootstrap allowlist must not leak from
+             the local .env; promotion is covered by dedicated tests. -->
+        <env name="PLATFORM_ADMIN_EMAILS" value=""/>
     </php>
 </phpunit>

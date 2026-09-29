@@ -3,36 +3,40 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
-use Laravel\Fortify\Contracts\PasskeyUser;
-use Laravel\Fortify\PasskeyAuthenticatable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
  * @property int $id
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
+ * @property string|null $saml_name_id
  * @property string $password
+ * @property string $status
+ * @property bool $is_superadmin
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Collection<int, TenantMembership> $memberships
+ * @property-read Collection<int, Tenant> $tenants
  */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, Notifiable;
 
     /**
      * Get the attributes that should be cast.
@@ -45,6 +49,71 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'is_superadmin' => 'boolean',
         ];
+    }
+
+    /**
+     * The user's tenant memberships (multi-membership).
+     *
+     * @return HasMany<TenantMembership, $this>
+     */
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(TenantMembership::class);
+    }
+
+    /**
+     * All tenants the user is a member of, through the pivot.
+     *
+     * @return BelongsToMany<Tenant, $this, TenantMembership, 'pivot'>
+     */
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_memberships')
+            ->using(TenantMembership::class)
+            ->withPivot('is_default')
+            ->withTimestamps();
+    }
+
+    /**
+     * The user's default membership, if any.
+     */
+    public function defaultMembership(): ?TenantMembership
+    {
+        return $this->memberships->firstWhere('is_default', true);
+    }
+
+    /**
+     * Promote this account to superadmin when its email is on the bootstrap
+     * allowlist (config platform.admin_emails). Called from the SAML JIT
+     * path; safe to call repeatedly — promotion is one-way from this entry
+     * point, and revocation happens in data (T11 admin UI).
+     */
+    public function promoteIfAllowlisted(): void
+    {
+        $allowlist = array_map('strtolower', (array) config('platform.admin_emails', []));
+
+        if (in_array(strtolower($this->email), $allowlist, true) && ! $this->is_superadmin) {
+            $this->forceFill(['is_superadmin' => true])->save();
+        }
+    }
+
+    /**
+     * Whether this account may administer the central platform area
+     * (/platform/business-units).
+     *
+     * Two grants, resolved through the single gate in config/platform.php:
+     * the persisted superadmin flag (stamped at SAML login), or the
+     * environment fallback grant — the allowlisted bootstrap account must
+     * reach the surface even before its first login, so a fresh install can
+     * create the first business unit (grill decision 2026-09-27).
+     */
+    public function isPlatformAdmin(): bool
+    {
+        /** @var callable(self): bool $gate */
+        $gate = config('platform.gate');
+
+        return $gate($this);
     }
 }

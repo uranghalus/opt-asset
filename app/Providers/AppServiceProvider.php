@@ -2,12 +2,23 @@
 
 namespace App\Providers;
 
+use App\Tenancy\TenantContext;
+use App\Tenancy\UlidIdentifierGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use SocialiteProviders\Manager\SocialiteWasCalled;
+use SocialiteProviders\Saml2\Saml2ExtendSocialite;
+use Stancl\Tenancy\Contracts\UniqueIdentifierGenerator;
 
+/**
+ * Fail-closed tenancy architecture: ULID tenant identifiers instead of the
+ * package default UUIDs — sortable, URL-safe, and stable in composite
+ * unique constraints.
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -15,7 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Tenant ids are ULIDs: sortable, URL-safe, and stable inside the
+        // composite unique constraints every domain table carries.
+        $this->app->bind(UniqueIdentifierGenerator::class, UlidIdentifierGenerator::class);
+
+        $this->app->singleton(TenantContext::class);
     }
 
     /**
@@ -25,9 +40,9 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        \Illuminate\Support\Facades\Event::listen(
-            \SocialiteProviders\Manager\SocialiteWasCalled::class,
-            [\SocialiteProviders\Saml2\Saml2ExtendSocialite::class, 'handle']
+        Event::listen(
+            SocialiteWasCalled::class,
+            [Saml2ExtendSocialite::class, 'handle']
         );
     }
 
