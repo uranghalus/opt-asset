@@ -95,28 +95,12 @@ Status per tanggal terakhir dibahas — update bagian ini setiap kali ada tiket 
 
 ### Daftar tiket
 
-| Tiket | Isi                                                                      | Blocked by                            |
-| ----- | ------------------------------------------------------------------------ | ------------------------------------- |
-| 01    | Refactor sidebar nav + promo card                                        | —                                     |
-| 02    | Header top-bar (search + actions)                                        | —                                     |
-| 03    | Bento-grid shell + hero chart + 3 stat card                              | —                                     |
-| 04    | Kartu Aset panel + quick actions + assignee avatars                      | 03                                    |
-| 05    | Progress bar + tips card (middle row)                                    | 03                                    |
-| 06a   | Analisis kategori (stacked bar)                                          | 05                                    |
-| 06b   | Kesehatan portofolio (gauge)                                             | 05                                    |
-| 06c   | Pelacakan target (goal tracker)                                          | 05                                    |
-| 07    | Riwayat aktivitas (list column)                                          | 04                                    |
-| 08    | Final polish — spacing, light/dark parity, reduced-motion, responsive QA | 01, 02, 03, 04, 05, 06a, 06b, 06c, 07 |
-
-_Catatan: 06 dipecah jadi 06a/06b/06c (bukan satu tiket) karena masing-masing punya komponen non-trivial berbeda (bar chart, gauge SVG custom, progress tracker) — jangan gabung ulang kecuali ada alasan baru._
+Tiket aktif ada di `docs/PROJECT-PLAN.md` (T01–T14, terbit sebagai issue GitHub #9–#22 plus follow-up #23–#25) — tabel & "Blocked by" di body issue adalah sumber kebenaran status dan dependency; jangan duplikasi daftar tiket di sini.
 
 ### Aturan kerja
 
-- 01, 02, 03 boleh paralel — menyentuh file berbeda (sidebar, header, dashboard grid).
-- 04 & 05 baru mulai setelah 03 selesai (butuh grid shell).
-- 06a/06b/06c baru mulai setelah 05 selesai, dan boleh paralel satu sama lain.
-- 07 baru mulai setelah 04 selesai (butuh scaffold kolom kanan).
-- 08 baru mulai setelah SEMUA tiket lain selesai — jangan mulai polish pass sebagian.
+- Status per 2026-09-29: T01, T01b, T01c, T01d, T02 selesai; **T03 (#11, Classification Chain) adalah frontier berikutnya**; T04–T14 menunggu T03.
+- Urutan & paralelisasi mengikuti "Blocked by" di body masing-masing issue, bukan daftar lokal.
 - Setiap tiket yang menyentuh kode PHP: jalankan `vendor/bin/pint --dirty --format agent` sebelum dianggap selesai.
 - Setiap tiket yang menyentuh frontend: jalankan `npm run types:check` dan pastikan `npm run build` (atau `npm run dev` bila build-manifest error) tidak error sebelum dianggap selesai.
 - Promo card (tiket 01): copy tetap placeholder ("Upgrade untuk fitur enterprise") sampai model bisnis multi-tenant (internal grup vs SaaS eksternal) diputuskan — jangan tulis copy tier/harga nyata tanpa konfirmasi.

@@ -25,6 +25,15 @@ _Terakhir diperbarui: 2026-09-28 (T02 SELESAI di `feature/rbac-t02` — spatie/l
 - **Frontier berikutnya:** T03 (#11) Classification Chain — golongan → kategori → kelompok → sub kelompok + items (CRUD + cascading UI); skill UI (impeccable/ui-ux-pro-max/shadcn) mulai dipakai di sini (halaman klasifikasi pertama). T02 decisions tercatat di #10 + PROJECT-PLAN.md §2. `gh` CLI berfungsi; GitHub MCP juga berfungsi (terverifikasi 2026-09-28). Screenshot UI perlu IdP lokal / keputusan backdoor dev — sengaja tidak dibuat (rules §1.2).
 - Draft lokal tiket tetap di `.scratch/ams-v2/issues/` (sinkron konsep dengan #9–#22).
 
+## Update sesi 2026-09-29 (research + grill-with-docs + housekeeping)
+
+- **T02 terverifikasi ulang:** 113 test / 363 assertion hijau (dijalankan ulang lokal). Tidak ada PR T02 selama ini — semua kerja T02 hanya di branch.
+- **Keputusan grill 2026-09-29 (5):** (1) merge PR #8 dulu → buka PR T02 → merge → T03 dari main baru; (2) T03 gating = route middleware `permission:classifications.manage` + Gate + UI hide — T03 = konsumen HTTP pertama mesin RBAC T02; (3) chain code immutable once referenced (ADR-0001); (4) housekeeping sweep dieksekusi; (5) `locations` = tabel minimal di dalam T04 (ADR-0002), bukan free-text, bukan tiket terpisah.
+- **Dieksekusi 2026-09-29:** PR #8 merge (commit `3c6373a`) + epic #1 & tiket #2–#7 closed; **PR #26 dibuka** (feature/rbac-t02 → main, closes #10 saat merge); `CONTEXT.md` glossary dibuat (lazy, pertama kali); ADR-0001 & ADR-0002; PRD §7 users sketch dikoreksi (tanpa tenant_id/role_id); `.ai/rules.md` §4 di-refresh (daftar tiket → PROJECT-PLAN sbg sumber kebenaran); research doc `docs/research/2026-09-29-t02-verification-and-t03-frontier.md`; work plan `docs/WORK-PLAN-2026-09-29.md` (T03 = 6 slice TDD).
+- **Spesifikasi gap temuan:** `locations` dirujuk `assets.lokasi_id` + `asset_mutations.from/to_location_id` (PRD §7) tapi tidak pernah didefinisikan — diselesaikan via ADR-0002 (T04).
+- **⚠️ Residual manual:** `AGENTS.md` masih menunjuk root `rules.md` (file asli `.ai/rules.md`) — client memblokir edit file tersebut; perlu perbaikan satu baris manual.
+- **Temuan audit route:** belum ada route yang memakai `permission:`/`role:` middleware — T03 akan menjadi pembuktian end-to-end pertama (403 utk role `default`, lolos utk `Admin Tenant`).
+
 ## Risiko & catatan sesi berikutnya
 
 - Isolasi tenant = defect class tertinggi; setiap tiket yang menyentuh query domain wajib isolation test (rules §1.1). Pattern tabel domain (T03+): PK ULID (HasUlids) + `tenant_id` FK + composite unique + `use BelongsToTenant` + isolation test dengan harness Machine yang sama.

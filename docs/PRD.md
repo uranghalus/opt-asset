@@ -136,7 +136,7 @@ Extend ini menambahkan: multi-tenancy (banyak perusahaan dalam satu instance), a
 
 **sso_configurations** `id, tenant_id, idp_entity_id, idp_sso_url, idp_x509_cert, attribute_mapping (json), created_at`
 
-**users** `id, tenant_id, name, email, saml_name_id, role_id, status, last_login_at`
+**users** `id, name, email, saml_name_id, is_superadmin, status, last_login_at` — tanpa `tenant_id` (dihapus T01c; keanggotaan via pivot `tenant_memberships`) dan tanpa `role_id` (T02: role per keanggotaan via spatie `model_has_roles`)
 
 **roles / permissions** (RBAC — via spatie/laravel-permission v8, keputusan 2026-09-28; menggantikan sketsa custom: `permissions` global, `roles` team-scoped dengan `team_id` = `tenant_id`, `model_has_roles` role-per-keanggotaan; konvensi: role team-scoped bernama `default` = landing role tenant)
 
