@@ -6,19 +6,21 @@ use App\Models\Tenant;
 use App\Models\TenantSwitch;
 use App\Models\User;
 use App\Tenancy\Facades\TenantContext;
+use App\Tenancy\TenantContext as TenantContextService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Superadmin access + universal tenant switcher (ticket T01d / GitHub #25).
+ * Superadmin access + universal tenant switcher.
  *
- * Decisions (grill 2026-09-26): superuser status is a database flag
- * (users.is_superadmin), seeded from PLATFORM_ADMIN_EMAILS at SAML login —
- * grant/revoke lives in data, not config. Superadmin keeps tenant
- * memberships AND reaches platform CRUD; the switcher offers ALL active
- * tenants to a superadmin and memberships-only to regular users. The
- * security boundary is unchanged: all data access still happens inside a
- * tenant context (switch), never as unscoped cross-tenant queries.
+ * Decisions (grill 2026-09-26, carried through the 2026-09-27 rebuild):
+ * superuser status is a database flag (users.is_superadmin), seeded from
+ * PLATFORM_ADMIN_EMAILS at SAML login — grant/revoke lives in data, not
+ * config. Superadmin keeps tenant memberships AND reaches platform CRUD;
+ * the switcher offers ALL active tenants to a superadmin and
+ * memberships-only to regular users. The security boundary is unchanged:
+ * all data access still happens inside a tenant context (switch), never as
+ * unscoped cross-tenant queries.
  */
 class SuperadminAccessTest extends TestCase
 {
@@ -49,7 +51,7 @@ class SuperadminAccessTest extends TestCase
 
         // A membership-holding superadmin reaches the platform area again.
         $this->actingAs($user)
-            ->get(route('platform.tenants.index'))
+            ->get(route('platform.business-units.index'))
             ->assertOk();
     }
 
@@ -62,7 +64,7 @@ class SuperadminAccessTest extends TestCase
         $this->assertFalse($user->isPlatformAdmin());
 
         $this->actingAs($user)
-            ->get(route('platform.tenants.index'))
+            ->get(route('platform.business-units.index'))
             ->assertNotFound();
     }
 
@@ -80,7 +82,7 @@ class SuperadminAccessTest extends TestCase
             ->post(route('tenant.switch'), ['tenant_id' => $foreignTenant->id])
             ->assertRedirect();
 
-        $this->assertSame($foreignTenant->id, session(\App\Tenancy\TenantContext::SESSION_KEY));
+        $this->assertSame($foreignTenant->id, session(TenantContextService::SESSION_KEY));
 
         $switch = TenantSwitch::query()->sole();
         $this->assertSame($super->id, $switch->user_id);
@@ -109,7 +111,7 @@ class SuperadminAccessTest extends TestCase
 
         $anyTenant = Tenant::factory()->create(['code' => 'ANY']);
 
-        session([\App\Tenancy\TenantContext::SESSION_KEY => $anyTenant->id]);
+        session([TenantContextService::SESSION_KEY => $anyTenant->id]);
 
         $this->actingAs($super)->get(route('dashboard'));
 

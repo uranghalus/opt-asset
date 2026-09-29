@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Context;
 use Stancl\Tenancy\Contracts\Tenant as TenantContract;
 
 /**
- * Single authority for the acting tenant context (T01c multi-membership).
+ * Single authority for the acting tenant context.
  *
  * A session-based user acts inside a tenant resolved from their
  * memberships: session pointer → default membership → fail. The session
@@ -75,19 +75,19 @@ class TenantContext
 
     /**
      * Switch the user's active tenant, validating an active membership on
-     * the target, and writing an audit row.
+     * the target (or superadmin access), and writing an audit row.
      *
      * Side effects: sets the session pointer, rebinds spatie's permissions
      * team id to the target, unsets cached role/permission relations (T02),
      * and writes the audit row.
      *
-     * @return bool true when switched; false when the user has no active
-     *              membership on the target (no state is changed)
+     * @return bool true when switched; false when the user may not act in
+     *              the target (no state is changed)
      */
     public function switch(User $user, string $tenantId): bool
     {
         // Superadmin: any active tenant is enterable, membership or not.
-        $target = $user->is_superadmin
+        $target = $user->isPlatformAdmin()
             ? $this->activeTenant($tenantId)
             : $this->activeMembershipTenant($user, $tenantId);
 
@@ -129,7 +129,7 @@ class TenantContext
         $sessionTenantId = session(self::SESSION_KEY);
 
         if (is_string($sessionTenantId) && $sessionTenantId !== '') {
-            $tenant = $user->is_superadmin
+            $tenant = $user->isPlatformAdmin()
                 ? $this->activeTenant($sessionTenantId)
                 : $this->activeMembershipTenant($user, $sessionTenantId);
 
@@ -139,7 +139,7 @@ class TenantContext
             // Stale pointer: self-heal by falling through below.
         }
 
-        if ($user->is_superadmin) {
+        if ($user->isPlatformAdmin()) {
             // No pointer: fall back to a membership default, else the
             // first active tenant — a superadmin is never context-less.
             return $this->defaultMembershipTenant($user)
@@ -166,7 +166,7 @@ class TenantContext
      */
     protected function activeMembershipTenant(User $user, string $tenantId): ?Tenant
     {
-        return TenantContext::membershipQuery($user)
+        return self::membershipQuery($user)
             ->where('tenant_memberships.tenant_id', $tenantId)
             ->first()?->tenant;
     }
@@ -177,7 +177,7 @@ class TenantContext
      */
     protected function defaultMembershipTenant(User $user): ?Tenant
     {
-        return TenantContext::membershipQuery($user)
+        return self::membershipQuery($user)
             ->where('tenant_memberships.is_default', true)
             ->first()?->tenant;
     }

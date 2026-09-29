@@ -1,7 +1,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { MoreHorizontal, Pencil, Plus, Search } from 'lucide-react';
+import { Building2, MoreHorizontal, Pencil, Plus, Search } from 'lucide-react';
 import { useRef, useState } from 'react';
-import TenantController from '@/actions/App/Http/Controllers/Platform/TenantController';
+import BusinessUnitController from '@/actions/App/Http/Controllers/Platform/BusinessUnitController';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -30,14 +31,6 @@ import {
     PaginationPrevious,
 } from '@/components/ui/pagination';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import {
     Table,
     TableBody,
     TableCell,
@@ -45,37 +38,40 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { index, transition } from '@/routes/platform/tenants';
-import { create as tenantsCreate } from '@/routes/platform/tenants';
-import { edit as tenantsEdit } from '@/routes/platform/tenants';
+import {
+    create as unitsCreate,
+    edit as unitsEdit,
+    index,
+    transition,
+} from '@/routes/platform/business-units';
 
-/** Lifecycle statuses of a tenant; mirrors TenantTransitionRequest. */
+/** Lifecycle statuses of a business unit; mirrors BusinessUnitTransitionRequest. */
 const STATUSES = ['active', 'inactive', 'suspended'] as const;
-type TenantStatus = (typeof STATUSES)[number];
+type UnitStatus = (typeof STATUSES)[number];
 
-const STATUS_LABELS: Record<TenantStatus, string> = {
+const STATUS_LABELS: Record<UnitStatus, string> = {
     active: 'Aktif',
     inactive: 'Nonaktif',
     suspended: 'Ditangguhkan',
 };
 
-/** Status badge tones — always text + color, never color alone (rules §2). */
-const STATUS_TONES: Record<TenantStatus, string> = {
+/** Status badge tones — always text + color, never color alone. */
+const STATUS_TONES: Record<UnitStatus, string> = {
     active: 'border-success/30 bg-success/10 text-success',
     inactive: 'border-border-solid bg-surface-solid-alt text-text-secondary',
     suspended: 'border-danger/30 bg-danger/10 text-danger',
 };
 
-type TenantItem = {
+type BusinessUnitItem = {
     id: string;
     code: string;
     name: string;
-    status: TenantStatus;
+    status: UnitStatus;
     created_at: string;
 };
 
-type TenantsPaginator = {
-    data: TenantItem[];
+type UnitsPaginator = {
+    data: BusinessUnitItem[];
     current_page: number;
     from: number | null;
     last_page: number;
@@ -84,14 +80,14 @@ type TenantsPaginator = {
 };
 
 type PageProps = {
-    tenants: TenantsPaginator;
+    businessUnits: UnitsPaginator;
     filters: { search: string; status: string };
 };
 
 /** Transition awaiting confirmation inside the dialog. */
 type PendingTransition = {
-    tenant: TenantItem;
-    status: TenantStatus;
+    unit: BusinessUnitItem;
+    status: UnitStatus;
 } | null;
 
 /**
@@ -104,7 +100,9 @@ function pageWindow(current: number, last: number): (number | '…')[] {
     }
 
     const pages = new Set<number>([1, last, current - 1, current, current + 1]);
-    const sorted = [...pages].filter((p) => p >= 1 && p <= last).sort((a, b) => a - b);
+    const sorted = [...pages]
+        .filter((p) => p >= 1 && p <= last)
+        .sort((a, b) => a - b);
 
     const result: (number | '…')[] = [];
     let previous = 0;
@@ -120,22 +118,22 @@ function pageWindow(current: number, last: number): (number | '…')[] {
 }
 
 /**
- * Platform tenant index — central admin surface (ticket T01b).
+ * Platform business unit index — central admin surface.
  *
  * Solid data layer per DESIGN.md: table, toolbar, and pagination sit on
  * surface-solid without blur; only the page header card stays glass.
  */
-export default function PlatformTenantIndex() {
-    const { tenants, filters } = usePage<PageProps>().props;
+export default function PlatformBusinessUnitIndex() {
+    const { businessUnits, filters } = usePage<PageProps>().props;
     const [search, setSearch] = useState(filters.search);
     const [pending, setPending] = useState<PendingTransition>(null);
     const toolbarRef = useRef<HTMLFormElement>(null);
 
     /**
-     * Apply toolbar filters through a partial reload: only `tenants` and
-     * `filters` travel over the wire (Inertia partial reloads), so shared
-     * layout data is never re-sent. Live values come from FormData — the
-     * status select is uncontrolled.
+     * Apply toolbar filters through a partial reload: only `businessUnits`
+     * and `filters` travel over the wire (Inertia partial reloads), so
+     * shared layout data is never re-sent. Live values come from FormData —
+     * the status select is uncontrolled.
      */
     const applyFilters = () => {
         const data = new FormData(toolbarRef.current ?? undefined);
@@ -150,7 +148,7 @@ export default function PlatformTenantIndex() {
                 ...(statusValue !== '' ? { status: statusValue } : {}),
             },
             {
-                only: ['tenants', 'filters'],
+                only: ['businessUnits', 'filters'],
                 preserveState: true,
                 replace: true,
             },
@@ -158,27 +156,32 @@ export default function PlatformTenantIndex() {
     };
 
     const pageHref = (page: number) =>
-        index({ query: { page, search: filters.search, status: filters.status } })
-            .url;
+        index({
+            query: { page, search: filters.search, status: filters.status },
+        }).url;
+
+    const isEmpty =
+        businessUnits.data.length === 0 && !filters.search && !filters.status;
 
     return (
         <>
-            <Head title="Manajemen Tenant" />
+            <Head title="Unit Usaha" />
 
             <div className="space-y-6 px-6 py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="space-y-0.5">
                         <h1 className="text-xl font-semibold tracking-tight">
-                            Manajemen Tenant
+                            Unit Usaha
                         </h1>
                         <p className="text-sm text-muted-foreground">
-                            Organisasi yang memakai sistem ini. Menangguhkan tenant langsung memblokir seluruh penggunanya.
+                            Organisasi yang memakai sistem ini. Menangguhkan
+                            unit usaha langsung memblokir seluruh penggunanya.
                         </p>
                     </div>
                     <Button asChild className="shrink-0">
-                        <Link href={tenantsCreate()}>
+                        <Link href={unitsCreate()}>
                             <Plus aria-hidden="true" className="size-4" />
-                            Tambah tenant
+                            Tambah unit usaha
                         </Link>
                     </Button>
                 </div>
@@ -194,8 +197,8 @@ export default function PlatformTenantIndex() {
                     className="flex flex-wrap items-end gap-3"
                 >
                     <div className="min-w-56 flex-1 space-y-1.5">
-                        <Label htmlFor="tenant-search" className="sr-only">
-                            Cari tenant
+                        <Label htmlFor="unit-search" className="sr-only">
+                            Cari unit usaha
                         </Label>
                         <div className="relative">
                             <Search
@@ -203,11 +206,11 @@ export default function PlatformTenantIndex() {
                                 className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-text-secondary"
                             />
                             <Input
-                                id="tenant-search"
+                                id="unit-search"
                                 name="search"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Cari kode atau nama tenant…"
+                                placeholder="Cari kode atau nama unit usaha…"
                                 className="pl-8"
                                 autoComplete="off"
                             />
@@ -215,11 +218,11 @@ export default function PlatformTenantIndex() {
                     </div>
 
                     <div className="w-44 space-y-1.5">
-                        <Label htmlFor="tenant-status" className="sr-only">
+                        <Label htmlFor="unit-status" className="sr-only">
                             Filter status
                         </Label>
                         <select
-                            id="tenant-status"
+                            id="unit-status"
                             name="status"
                             defaultValue={filters.status}
                             className="h-9 w-full rounded-md border border-input bg-transparent px-2.5 text-sm text-text-primary shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 dark:bg-input/30"
@@ -242,7 +245,9 @@ export default function PlatformTenantIndex() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="w-[38%]">Tenant</TableHead>
+                                <TableHead className="w-[38%]">
+                                    Unit Usaha
+                                </TableHead>
                                 <TableHead>Kode</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Dibuat</TableHead>
@@ -252,41 +257,83 @@ export default function PlatformTenantIndex() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {tenants.data.length === 0 && (
+                            {businessUnits.data.length === 0 && (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell colSpan={5} className="py-12 text-center">
-                                        <p className="text-sm font-medium text-text-primary">
-                                            Belum ada tenant yang cocok
-                                        </p>
-                                        <p className="mt-1 text-[12.5px] text-text-secondary">
-                                            Ubah kata kunci pencarian, atau tambahkan
-                                            tenant baru untuk memulai.
-                                        </p>
+                                    <TableCell
+                                        colSpan={5}
+                                        className="py-12 text-center"
+                                    >
+                                        {isEmpty ? (
+                                            <>
+                                                <Building2
+                                                    aria-hidden="true"
+                                                    className="mx-auto mb-3 size-8 text-text-secondary"
+                                                />
+                                                <p className="text-sm font-medium text-text-primary">
+                                                    Belum ada unit usaha
+                                                </p>
+                                                <p className="mx-auto mt-1 max-w-sm text-[12.5px] text-text-secondary">
+                                                    Mulai dengan membuat unit
+                                                    usaha pertama — setelah itu
+                                                    pengguna SSO bisa langsung
+                                                    dilekatkan ke dalamnya.
+                                                </p>
+                                                <Button
+                                                    asChild
+                                                    size="sm"
+                                                    className="mt-4"
+                                                >
+                                                    <Link href={unitsCreate()}>
+                                                        <Plus
+                                                            aria-hidden="true"
+                                                            className="size-4"
+                                                        />
+                                                        Buat unit usaha pertama
+                                                    </Link>
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-sm font-medium text-text-primary">
+                                                    Belum ada unit usaha yang
+                                                    cocok
+                                                </p>
+                                                <p className="mt-1 text-[12.5px] text-text-secondary">
+                                                    Ubah kata kunci pencarian,
+                                                    atau tambahkan unit usaha
+                                                    baru untuk memulai.
+                                                </p>
+                                            </>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             )}
 
-                            {tenants.data.map((tenant) => (
-                                <TableRow key={tenant.id}>
+                            {businessUnits.data.map((unit) => (
+                                <TableRow key={unit.id}>
                                     <TableCell className="max-w-72 truncate py-2.5 font-medium text-text-primary">
-                                        {tenant.name}
+                                        {unit.name}
                                     </TableCell>
                                     <TableCell className="font-mono text-[12.5px] font-semibold tracking-tight text-text-primary tabular-nums">
-                                        {tenant.code}
+                                        {unit.code}
                                     </TableCell>
                                     <TableCell>
                                         <span
                                             role="status"
-                                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_TONES[tenant.status]}`}
+                                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_TONES[unit.status]}`}
                                         >
-                                            {STATUS_LABELS[tenant.status]}
+                                            {STATUS_LABELS[unit.status]}
                                         </span>
                                     </TableCell>
                                     <TableCell className="text-[12.5px] text-text-secondary">
-                                        {new Date(tenant.created_at).toLocaleDateString(
-                                            'id-ID',
-                                            { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' },
-                                        )}
+                                        {new Date(
+                                            unit.created_at,
+                                        ).toLocaleDateString('id-ID', {
+                                            day: '2-digit',
+                                            month: 'short',
+                                            year: 'numeric',
+                                            timeZone: 'UTC',
+                                        })}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <DropdownMenu>
@@ -294,7 +341,7 @@ export default function PlatformTenantIndex() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    aria-label={`Aksi untuk ${tenant.name}`}
+                                                    aria-label={`Aksi untuk ${unit.name}`}
                                                 >
                                                     <MoreHorizontal
                                                         aria-hidden="true"
@@ -304,25 +351,37 @@ export default function PlatformTenantIndex() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel className="sr-only">
-                                                    Aksi tenant
+                                                    Aksi unit usaha
                                                 </DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <Link href={tenantsEdit({ tenant: tenant.id })}>
-                                                        <Pencil aria-hidden="true" className="size-4" />
+                                                    <Link
+                                                        href={unitsEdit({
+                                                            tenant: unit.id,
+                                                        })}
+                                                    >
+                                                        <Pencil
+                                                            aria-hidden="true"
+                                                            className="size-4"
+                                                        />
                                                         Edit
                                                     </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 {STATUSES.filter(
-                                                    (status) => status !== tenant.status,
+                                                    (status) =>
+                                                        status !== unit.status,
                                                 ).map((status) => (
                                                     <DropdownMenuItem
                                                         key={status}
                                                         onSelect={() =>
-                                                            setPending({ tenant, status })
+                                                            setPending({
+                                                                unit,
+                                                                status,
+                                                            })
                                                         }
                                                     >
-                                                        Jadikan {STATUS_LABELS[status]}
+                                                        Jadikan{' '}
+                                                        {STATUS_LABELS[status]}
                                                     </DropdownMenuItem>
                                                 ))}
                                             </DropdownMenuContent>
@@ -334,12 +393,14 @@ export default function PlatformTenantIndex() {
                     </Table>
                 </div>
 
-                {tenants.last_page > 1 && (
+                {businessUnits.last_page > 1 && (
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <p className="text-[12px] text-text-secondary tabular-nums">
-                            Menampilkan {tenants.from}–
-                            {tenants.from! + tenants.data.length - 1} dari{' '}
-                            {tenants.total} tenant
+                            Menampilkan {businessUnits.from}–
+                            {businessUnits.from! +
+                                businessUnits.data.length -
+                                1}{' '}
+                            dari {businessUnits.total} unit usaha
                         </p>
 
                         <Pagination className="mx-0 w-auto justify-end">
@@ -347,18 +408,23 @@ export default function PlatformTenantIndex() {
                                 <PaginationItem>
                                     <PaginationPrevious
                                         href={
-                                            tenants.current_page > 1
-                                                ? pageHref(tenants.current_page - 1)
+                                            businessUnits.current_page > 1
+                                                ? pageHref(
+                                                      businessUnits.current_page -
+                                                          1,
+                                                  )
                                                 : undefined
                                         }
-                                        only={['tenants', 'filters']}
-                                        disabled={tenants.current_page <= 1}
+                                        only={['businessUnits', 'filters']}
+                                        disabled={
+                                            businessUnits.current_page <= 1
+                                        }
                                     />
                                 </PaginationItem>
 
                                 {pageWindow(
-                                    tenants.current_page,
-                                    tenants.last_page,
+                                    businessUnits.current_page,
+                                    businessUnits.last_page,
                                 ).map((page, i) =>
                                     page === '…' ? (
                                         <PaginationItem key={`ellipsis-${i}`}>
@@ -368,10 +434,17 @@ export default function PlatformTenantIndex() {
                                         <PaginationItem key={page}>
                                             <PaginationLink
                                                 href={pageHref(page)}
-                                                only={['tenants', 'filters']}
-                                                isActive={page === tenants.current_page}
+                                                only={[
+                                                    'businessUnits',
+                                                    'filters',
+                                                ]}
+                                                isActive={
+                                                    page ===
+                                                    businessUnits.current_page
+                                                }
                                                 aria-current={
-                                                    page === tenants.current_page
+                                                    page ===
+                                                    businessUnits.current_page
                                                         ? 'page'
                                                         : undefined
                                                 }
@@ -385,14 +458,19 @@ export default function PlatformTenantIndex() {
                                 <PaginationItem>
                                     <PaginationNext
                                         href={
-                                            tenants.current_page < tenants.last_page
-                                                ? pageHref(tenants.current_page + 1)
+                                            businessUnits.current_page <
+                                            businessUnits.last_page
+                                                ? pageHref(
+                                                      businessUnits.current_page +
+                                                          1,
+                                                  )
                                                 : undefined
                                         }
-                                        only={['tenants', 'filters']}
                                         disabled={
-                                            tenants.current_page >= tenants.last_page
+                                            businessUnits.current_page >=
+                                            businessUnits.last_page
                                         }
+                                        only={['businessUnits', 'filters']}
                                     />
                                 </PaginationItem>
                             </PaginationContent>
@@ -402,7 +480,7 @@ export default function PlatformTenantIndex() {
             </div>
 
             {/* Status transition confirmation — suspending locks out every
-                user of the tenant, so destructive intent must be explicit. */}
+                user of the unit, so destructive intent must be explicit. */}
             <Dialog
                 open={pending !== null}
                 onOpenChange={(open) => open === false && setPending(null)}
@@ -415,18 +493,21 @@ export default function PlatformTenantIndex() {
                                     Jadikan {STATUS_LABELS[pending.status]}?
                                 </DialogTitle>
                                 <DialogDescription>
-                                    Tenant{' '}
+                                    Unit usaha{' '}
                                     <span className="font-mono font-semibold text-text-primary">
-                                        {pending.tenant.code}
+                                        {pending.unit.code}
                                     </span>{' '}
-                                    ({pending.tenant.name})
+                                    ({pending.unit.name})
                                     {pending.status === 'suspended'
                                         ? ' akan langsung diblokir dari sistem pada request berikutnya.'
                                         : ' akan mendapat status tersebut pada request berikutnya.'}
                                 </DialogDescription>
                             </DialogHeader>
                             <DialogFooter>
-                                <Button variant="outline" onClick={() => setPending(null)}>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setPending(null)}
+                                >
                                     Batal
                                 </Button>
                                 <Button
@@ -437,12 +518,17 @@ export default function PlatformTenantIndex() {
                                     }
                                     onClick={() =>
                                         router.visit(
-                                            transition({ tenant: pending.tenant.id }).url,
+                                            transition({
+                                                tenant: pending.unit.id,
+                                            }).url,
                                             {
                                                 method: 'patch',
-                                                data: { status: pending.status },
+                                                data: {
+                                                    status: pending.status,
+                                                },
                                                 preserveScroll: true,
-                                                onSuccess: () => setPending(null),
+                                                onSuccess: () =>
+                                                    setPending(null),
                                             },
                                         )
                                     }
@@ -458,9 +544,9 @@ export default function PlatformTenantIndex() {
     );
 }
 
-PlatformTenantIndex.layout = {
+PlatformBusinessUnitIndex.layout = {
     breadcrumbs: [
         { title: 'Platform', href: '#' },
-        { title: 'Tenant', href: index().url },
+        { title: 'Unit Usaha', href: index().url },
     ],
 };

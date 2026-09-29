@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * One user's membership in one tenant.
+ * One user's membership in one tenant (business unit).
  *
  * Deliberately NOT tenant-scoped (no BelongsToTenant): a user's membership
  * list must stay readable from inside any tenant context, otherwise the

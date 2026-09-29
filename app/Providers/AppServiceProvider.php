@@ -17,9 +17,9 @@ use SocialiteProviders\Saml2\Saml2ExtendSocialite;
 use Stancl\Tenancy\Contracts\UniqueIdentifierGenerator;
 
 /**
- * Fail-closed tenancy architecture (ticket T01 / GitHub #9, decision
- * 2026-09-25): ULID tenant identifiers instead of the package default UUIDs
- * — sortable, URL-safe, and stable in composite unique constraints.
+ * Fail-closed tenancy architecture: ULID tenant identifiers instead of the
+ * package default UUIDs — sortable, URL-safe, and stable in composite
+ * unique constraints.
  */
 class AppServiceProvider extends ServiceProvider
 {

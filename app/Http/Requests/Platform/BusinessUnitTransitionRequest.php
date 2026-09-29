@@ -6,9 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Validation for tenant status transitions (platform admin surface).
+ * Validation for business unit status transitions (platform admin surface).
  */
-class TenantTransitionRequest extends FormRequest
+class BusinessUnitTransitionRequest extends FormRequest
 {
     /**
      * Authorization: the route is already gated by EnsurePlatformAdmin; the
@@ -39,7 +39,7 @@ class TenantTransitionRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'status' => 'tenant status',
+            'status' => 'status unit usaha',
         ];
     }
 }

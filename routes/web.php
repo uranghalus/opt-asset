@@ -9,11 +9,11 @@ Route::get('/', function () {
         return redirect()->route('saml.redirect');
     }
 
-    // Route by membership (T01c): platform admins belong in the platform
-    // area — sending them to 'dashboard' would hit the `tenant` middleware
-    // and 403 — while members land on the dashboard.
+    // Route by membership: platform admins belong in the platform area —
+    // sending them to 'dashboard' would hit the `tenant` middleware and
+    // 403 — while members land on the dashboard.
     return auth()->user()->isPlatformAdmin()
-        ? redirect()->route('platform.tenants.index')
+        ? redirect()->route('platform.business-units.index')
         : redirect()->route('dashboard');
 })->name('home');
 
@@ -38,10 +38,10 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 });
 
-// Tenant switching (T01c/T01d) sits OUTSIDE the `tenant` middleware:
-// switching is how a superadmin first ACQUIRES a context, so the request
-// must not be redirected for lacking one. Target validation (membership
-// or superadmin, active tenant) and the audit row happen in the controller.
+// Tenant switching sits OUTSIDE the `tenant` middleware: switching is how a
+// superadmin first ACQUIRES a context, so the request must not be redirected
+// for lacking one. Target validation (membership or superadmin, active
+// tenant) and the audit row happen in the controller.
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('tenant/switch', [TenantSwitchController::class, 'store'])
         ->name('tenant.switch');

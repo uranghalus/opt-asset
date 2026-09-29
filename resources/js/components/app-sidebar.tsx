@@ -35,7 +35,7 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { index as platformTenantsIndex } from '@/routes/platform/tenants';
+import { index as platformUnitsIndex } from '@/routes/platform/business-units';
 
 const navGroups = [
     {
@@ -62,8 +62,8 @@ const navGroups = [
             { title: 'Setup SSO', href: '#', icon: ShieldCheck },
             { title: 'RBAC', href: '#', icon: Users },
             {
-                title: 'Tenant Provisioning',
-                href: platformTenantsIndex(),
+                title: 'Unit Usaha',
+                href: platformUnitsIndex(),
                 icon: Building2,
             },
         ],
@@ -127,7 +127,7 @@ function PromoCard() {
                 Upgrade untuk fitur enterprise
             </h3>
             <p className="mt-1 text-[11px] leading-relaxed text-text-secondary">
-                Wawasan aset penuh, analitik, dan grafik lintas tenant.
+                Wawasan aset penuh, analitik, dan grafik lintas unit usaha.
             </p>
 
             <Button

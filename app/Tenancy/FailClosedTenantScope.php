@@ -10,8 +10,8 @@ use Stancl\Tenancy\Contracts\Tenant as TenantContract;
 /**
  * Fail-closed tenant scope: the hole-closing replacement for
  * Stancl\Tenancy\Database\TenantScope, which returns unscoped results when
- * tenancy is not initialized (documented fail-open behavior — the reason
- * this wrapper exists, see docs/research/2026-09-25-foundation-decisions).
+ * tenancy is not initialized (documented fail-open behavior — see
+ * docs/research/2026-09-27-tenancy-reconfiguration.md).
  *
  * Semantics:
  *  - tenant initialized  → WHERE tenant_id = <acting tenant key>;

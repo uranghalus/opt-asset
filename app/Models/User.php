@@ -57,7 +57,7 @@ class User extends Authenticatable
     }
 
     /**
-     * The user's tenant memberships (multi-membership, T01c).
+     * The user's tenant memberships (multi-membership).
      *
      * @return HasMany<TenantMembership, $this>
      */
@@ -104,14 +104,19 @@ class User extends Authenticatable
 
     /**
      * Whether this account may administer the central platform area
-     * (T01d): the data-driven superadmin flag — with or without tenant
-     * memberships. The zero-membership rule from T01c is superseded.
+     * (/platform/business-units).
+     *
+     * Two grants, resolved through the single gate in config/platform.php:
+     * the persisted superadmin flag (stamped at SAML login), or the
+     * environment fallback grant — the allowlisted bootstrap account must
+     * reach the surface even before its first login, so a fresh install can
+     * create the first business unit (grill decision 2026-09-27).
      */
     public function isPlatformAdmin(): bool
     {
-        // Defensive null-coalesce: in-memory instances created before the
-        // attribute was set (e.g. pre-insert forceFill paths) would return
-        // null despite the column's false default.
-        return (bool) ($this->is_superadmin ?? false);
+        /** @var callable(self): bool $gate */
+        $gate = config('platform.gate');
+
+        return $gate($this);
     }
 }

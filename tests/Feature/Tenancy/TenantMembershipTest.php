@@ -10,12 +10,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Multi-membership + tenant switcher (ticket T01c / GitHub #24).
+ * Multi-membership + tenant switcher.
  *
- * Decisions (grill 2026-09-26): one SSO account may belong to several
- * tenants via tenant_memberships; the active tenant lives in the session;
- * roles will live per membership (T02); every switch is audited; the
- * platform area requires zero memberships AND an explicit email allowlist.
+ * Decisions (grill 2026-09-26, carried through the 2026-09-27 rebuild): one
+ * SSO account may belong to several tenants via tenant_memberships; the
+ * active tenant lives in the session; roles will live per membership (T02);
+ * every switch is audited.
  */
 class TenantMembershipTest extends TestCase
 {
@@ -26,7 +26,7 @@ class TenantMembershipTest extends TestCase
         parent::setUp();
 
         // Allowlist for platform-admin tests; individual tests override.
-        config(['platform.admin_emails' => ['boss@optigate.test', 'member@optigate.test']]);
+        config(['platform.admin_emails' => ['boss@optigate.test']]);
     }
 
     public function test_a_user_can_belong_to_multiple_tenants(): void
@@ -195,11 +195,11 @@ class TenantMembershipTest extends TestCase
         $this->assertFalse(TenantContext::check());
     }
 
-    public function test_platform_access_follows_the_superadmin_flag(): void
+    public function test_platform_access_follows_the_single_gate(): void
     {
-        // Superseded by T01d: the gate is the data-driven superadmin flag
-        // (promotion happens at SAML login), not membership count. A
-        // superadmin reaches the platform area WITH memberships too.
+        // The gate (config platform.gate) grants via the superadmin flag OR
+        // the environment fallback grant. A superadmin reaches the platform
+        // area WITH memberships too.
         $admin = User::factory()->create(['email' => 'boss@optigate.test']);
         $admin->promoteIfAllowlisted();
         $admin->memberships()->create([
@@ -207,20 +207,28 @@ class TenantMembershipTest extends TestCase
             'is_default' => true,
         ]);
         $this->actingAs($admin)
-            ->get(route('platform.tenants.index'))
+            ->get(route('platform.business-units.index'))
             ->assertOk();
 
-        // Allowlisted email but never promoted (no SAML login yet) → 404:
-        // the flag is the gate, raw config matching alone grants nothing.
-        $unpromoted = User::factory()->create(['email' => 'member@optigate.test']);
-        $this->actingAs($unpromoted)
-            ->get(route('platform.tenants.index'))
-            ->assertNotFound();
+        // The environment fallback grant reaches the platform area even
+        // without the persisted flag (fresh-install bootstrap path).
+        $fallback = User::factory()->create(['email' => 'fallback@optigate.test']);
+        config(['platform.admin_emails' => ['fallback@optigate.test']]);
+        $this->actingAs($fallback->refresh())
+            ->get(route('platform.business-units.index'))
+            ->assertOk();
+
+        // Nobody with a grant may act in a tenant context they do not own:
+        // a membership-less admin is denied the dashboard surface.
+        $contextless = User::factory()->create(['email' => 'fresh@optigate.test']);
+        $this->actingAs($contextless)
+            ->get(route('dashboard'))
+            ->assertForbidden();
 
         // NOT allowlisted, never promoted → the JIT hole stays closed.
         $stranger = User::factory()->create();
         $this->actingAs($stranger)
-            ->get(route('platform.tenants.index'))
+            ->get(route('platform.business-units.index'))
             ->assertNotFound();
     }
 

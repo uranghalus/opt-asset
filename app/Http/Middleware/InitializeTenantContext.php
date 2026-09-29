@@ -9,12 +9,13 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Resolve the acting tenant from the authenticated user's memberships and
- * initialize tenancy for the rest of the request (T01c multi-membership).
+ * initialize tenancy for the rest of the request.
  *
  * Fail-closed semantics:
  *  - guest → no context (routes are already auth-protected);
- *  - platform admin (zero memberships + allowlisted email) → redirect to
- *    the platform area; these accounts must never reach tenant-scoped routes;
+ *  - platform admin (env fallback grant or superadmin flag) → allowed
+ *    through with a resolved context when any active tenant exists; with
+ *    zero tenants they land on the platform area to create the first one;
  *  - user without an active membership (or only on suspended tenants) → 403.
  */
 class InitializeTenantContext
@@ -38,15 +39,16 @@ class InitializeTenantContext
             $resolved = TenantContext::initializeFromUser($user);
 
             if (! $resolved) {
-                // Platform admins have no tenant membership by design —
-                // route them to their area rather than a confusing 403.
+                // Platform admins without a resolvable tenant (e.g. zero
+                // tenants on a fresh install) belong in their area — route
+                // them there rather than a confusing 403.
                 if ($user->isPlatformAdmin()) {
-                    return redirect()->route('platform.tenants.index');
+                    return redirect()->route('platform.business-units.index');
                 }
 
                 // Any other failure (no membership, suspended tenant) is a
                 // genuine access problem — fail closed.
-                abort(403, 'Your account is not attached to an active organization.');
+                abort(403, 'Your account is not attached to an active business unit.');
             }
         }
 

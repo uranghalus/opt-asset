@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Tenant scoping for every domain model.
  *
  * Wraps Stancl\Tenancy\Database\Concerns\BelongsToTenant to close its
- * documented fail-open holes (rules.md §1.1):
+ * documented fail-open holes (docs/research/2026-09-27-tenancy-reconfiguration.md):
  *
  *  - queries use App\Tenancy\FailClosedTenantScope: initialized tenant →
  *    filtered; no context → zero rows, never an unscoped scan;
