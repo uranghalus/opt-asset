@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use App\Concerns\LocksCodeWhenReferenced;
 use Database\Factories\AssetGroupFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +31,7 @@ class AssetGroup extends Model
     use HasFactory;
 
     use HasUlids;
+    use LocksCodeWhenReferenced;
 
     /**
      * The attributes that are not mass assignable.
@@ -46,5 +48,16 @@ class AssetGroup extends Model
     public function categories(): HasMany
     {
         return $this->hasMany(AssetCategory::class);
+    }
+
+    /**
+     * The child model classes whose existing records lock this Golongan's
+     * `code` — a Kategori referencing it (ADR-0001).
+     *
+     * @return list<class-string<AssetCategory>>
+     */
+    protected function referencingModels(): array
+    {
+        return [AssetCategory::class];
     }
 }
