@@ -1,6 +1,6 @@
 # Opti-Asset — Agent Memory
 
-_Terakhir diperbarui: 2026-09-30 (T03 berjalan: 3/7 tiket selesai #27–#29 — T02 landed via PR #26 merged `79c3e21`, chain schema + models/factories di `feature/classification-t03`)._
+_Terakhir diperbarui: 2026-09-30 (T03 berjalan: 4/7 tiket selesai #27–#30 — T03.3 isolation+immutability proofs ter-push `dcc8129`; main dibersihkan dari 853 file artefak graphify-out)._
 
 ## Keputusan arsitektur & konvensi (binding)
 
@@ -43,6 +43,13 @@ _Terakhir diperbarui: 2026-09-30 (T03 berjalan: 3/7 tiket selesai #27–#29 — 
 - **T03.1 (#28) selesai:** migrasi `2026_09_29_100001_create_classification_chain` — 5 tabel, PK ULID, `tenant_id` FK cascade, parent FK **restrictOnDelete** (ADR-0001), unique `(tenant_id, code)` per level, items `(tenant_id, name)` + sub-cluster nullable. Penyempurnaan sadar: FK items→sub_cluster **restrict bukan null** (auto-unclassify melawan ADR-0001). 9 test skema.
 - **T03.2 (#29) selesai:** 5 model + 5 factory (state parent-wajib; code default 1 huruf di level atas; `Item::unclassified`). **Hardening `BelongsToTenant`:** docblock menjanjikan injected `tenant_id` selalu ditimpa, hook lama hanya men-stamp atribut kosong (fail-open) → kini context ada = acting tenant SELALU menang; tanpa context = explicit `tenant_id` diterima (fixture/import), kosong = throw. Regression test ada. Trait kini dianalisis L7 (T03 = konsumen pertama): narwos `TenantContract` ala `TenantContext::check`, `BelongsTo<Tenant, $this>`; ignore rule "used zero times" di phpstan.neon dihapus.
 - **Status akhir sesi:** 132 test / 441 assertion hijau; pint + phpstan L7 bersih; commit `c5df476` (skema) + `b0468df` (models) di `feature/classification-t03`. **Frontier berikutnya: #30** (isolation + immutability proofs per level, sebelum HTTP). Catatan: phpstan butuh `--memory-limit=1G` di mesin ini (limit PHP 128M crash); graphify CLI ada (`graphify update .` sukses) tapi tidak punya subcommand memory — §5.3 dipenuhi via log + memory file ini.
+
+## Update sesi 2026-09-30 kedua (grill + housekeeping state + T03.3 #30)
+
+- **Grill 7 keputusan (user):** recreate `feature/classification-t03` dari `origin/main`; repair main lokal; housekeeping junk; mulai T03.3; scope #30 saja; **lock kode = trait di model** (pola concern); commit housekeeping langsung di main sebelum branch.
+- **Housekeeping state repo:** main lokal stale/diverged (`2b9d457 "raewasda"`, junk 2026-09-24, pra-rebuild) → `reset --hard origin/main`. `ab64c48` membawa **853 file artefak** ke main (graphify-out/ 843 file — graph.json 426 ribu baris, cache AST, manifest; `.obsidian/workspace.json`; package-lock.json) → dihapus dari tracking + `.gitignore` (`/.obsidian`, `/graphify-out`), commit `e9eda99` di main; package-lock tetap di-track. Pelajaran: jalankan `graphify` hanya saat output-nya ter-ignore.
+- **T03.3 (#30) selesai (TDD RED→GREEN):** `ClassificationIsolationTest` 12 test dua-tenant kode identik (invisibility per 5 level incl. find-by-foreign-PK + flip context, cascade per tenant, fail-closed 5 level lengkap lintas 2 file, lock ADR-0001 per level, rejected edit persists nothing via try/catch, edit tak direferensikan OK, FK restrict via model). `App\Classification\CodeLockedException` + `App\Concerns\LocksCodeWhenReferenced` (pola `BelongsToTenant`; `referencingModels()` return class-string model anak — **bukan** nama relasi + `@var Relation<...>`: phpstan menolak, generic `Relation` butuh 3 template types `generics.lessTypes` dan repo melarang `@var` menimpa inferensi; lookup via query model anak ter-scope); diterapkan ke 4 model chain; `Item` tanpa trait (tidak punya `code`). Gate: **144 test/464 assertion hijau**, pint PASS, phpstan L7 0 error, types:check 0 error (setelah wayfinder regen — artefak gitignored belum ada di checkout baru). Commit `dcc8129` (7 file, +376) ter-push; #30 ditutup dengan komentar verifikasi.
+- **Watchpoint #31 (temuan slice ini):** FK DB tidak mencegah referensi parent lintas-tenant di level model (tenant stamping dipaksa, parent id tidak divalidasi same-tenant → row invisible-tapi-orphan) — validasi parent-id same-tenant harus masuk FormRequest #31 (AC "never targets another tenant's chain records" / 404 foreign ids). **Frontier berikutnya: #31 HTTP layer (`permission:classifications.manage`)** → #32 UI cascading → #33 DoD+ship.
 
 ## Risiko & catatan sesi berikutnya
 
