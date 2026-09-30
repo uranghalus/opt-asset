@@ -57,6 +57,47 @@ trait LocksCodeWhenReferenced
     }
 
     /**
+     * The first child record referencing this model, or null. The lookup
+     * goes through the child model's scoped query, so it only ever sees
+     * this tenant's children.
+     */
+    public function firstReferencingRecord(): ?Model
+    {
+        foreach ($this->referencingModels() as $modelClass) {
+            $record = $modelClass::query()->where($this->getForeignKey(), $this->getKey())->first();
+
+            if ($record !== null) {
+                return $record;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The validation message explaining why a code edit is rejected
+     * (ADR-0001), naming the first referencing child so the operator can
+     * act immediately instead of decoding a 500.
+     */
+    public function codeLockedMessage(): string
+    {
+        return __('Kode tidak dapat diubah karena masih dipakai oleh :name.', [
+            'name' => (string) ($this->firstReferencingRecord()?->getAttribute('name') ?? '-'),
+        ]);
+    }
+
+    /**
+     * The validation message explaining why deleting this record is
+     * rejected (ADR-0001), naming the first referencing child.
+     */
+    public function deleteBlockedMessage(): string
+    {
+        return __('Data ini tidak dapat dihapus karena masih dipakai oleh :name.', [
+            'name' => (string) ($this->firstReferencingRecord()?->getAttribute('name') ?? '-'),
+        ]);
+    }
+
+    /**
      * The child model classes whose existing records lock this model's
      * `code`.
      *
