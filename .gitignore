@@ -25,6 +25,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.nova
+/.obsidian
 /.vscode
 /.zed
 /.agents
@@ -40,5 +41,6 @@ yarn-error.log
 /AGENTS.md
 /CLAUDE.md
 /boost.json
+/graphify-out
 /opencode.json
 /opencode.jsonc
