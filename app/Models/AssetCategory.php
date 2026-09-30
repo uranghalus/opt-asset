@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use App\Concerns\LocksCodeWhenReferenced;
 use Database\Factories\AssetCategoryFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,6 +31,7 @@ class AssetCategory extends Model
     use HasFactory;
 
     use HasUlids;
+    use LocksCodeWhenReferenced;
 
     /**
      * The attributes that are not mass assignable.
@@ -56,5 +58,16 @@ class AssetCategory extends Model
     public function clusters(): HasMany
     {
         return $this->hasMany(AssetCluster::class);
+    }
+
+    /**
+     * The child model classes whose existing records lock this Kategori's
+     * `code` — a Kelompok referencing it (ADR-0001).
+     *
+     * @return list<class-string<AssetCluster>>
+     */
+    protected function referencingModels(): array
+    {
+        return [AssetCluster::class];
     }
 }
